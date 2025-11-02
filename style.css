@@ -1,0 +1,166 @@
+/* Define Dark Mode Variables for easy adjustment */
+:root {
+    --bg-primary: #1e1e1e;
+    --bg-secondary: #2d2d30;
+    --text-color: #f0f0f0;
+    --highlight-color: #8c9eff;
+    --calendar-bg: #3c3c3e;
+    --grid-text-color: #ccc;
+    
+    /* NEW: Counter Colors (Brown/Gold palette) */
+    --brown-base: #FFD700;   /* Lightest: Gold/Yellow (Count 1) */
+    --brown-mid1: #CC9900;
+    --brown-mid2: #996600;
+    --brown-dark: #654321;   /* Darkest: Deep Brown (Count 4+) */
+    --selection-border: #f0f0ff; /* White border for selected day */
+}
+
+/* -----------------------
+| GENERAL STYLES & LAYOUT |
+------------------------- */
+body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+    padding: 20px;
+    background-color: var(--bg-primary);
+    color: var(--text-color);
+}
+
+.container {
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 30px;
+    background-color: var(--bg-secondary);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    border-radius: 8px;
+}
+
+h1 {
+    color: var(--text-color);
+    margin-bottom: 25px;
+}
+
+/* -----------------------
+| BUTTON STYLES |
+------------------------- */
+.buttons-group button {
+    background-color: var(--highlight-color);
+    color: var(--bg-primary);
+    padding: 10px 20px;
+    margin: 5px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s ease;
+}
+
+.buttons-group button:hover {
+    background-color: #6a85ff;
+}
+
+/* -----------------------
+| INTERACTIVE CALENDAR STYLES |
+------------------------- */
+.calendar-container {
+    margin: 20px auto;
+    border: 1px solid #555;
+    border-radius: 4px;
+    background-color: var(--calendar-bg);
+    padding: 15px;
+}
+
+.calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    font-weight: bold;
+    font-size: 1.2em;
+}
+
+.calendar-header button {
+    color: var(--highlight-color);
+}
+
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 5px;
+    text-align: center;
+}
+
+.day-name {
+    font-weight: bold;
+    color: var(--grid-text-color);
+    padding: 5px 0;
+    border-bottom: 1px solid #555;
+}
+
+.date-number {
+    padding: 8px;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+    color: var(--grid-text-color);
+    position: relative;
+}
+
+.date-number:hover {
+    background-color: #444444;
+}
+
+/* New: Style for SELECTION */
+.selected-date {
+    outline: 2px solid var(--selection-border);
+    outline-offset: -2px;
+}
+
+/* Existing: Style for TODAY's date */
+.current-date {
+    /* background-color: var(--highlight-color); */
+    color: var(--grid-text-color);
+    /* color: var(--bg-primary); */
+    font-weight: bold;
+    /* outline: none; 
+    outline-offset: 0; */
+}
+
+
+/* --- NEW: COUNTER COLOR INTENSITY LOGIC (BROWN/GOLD) --- */
+
+/* Base style for any day with a counter > 0 */
+.date-number.has-counter {
+    background-color: var(--brown-base); 
+    color: var(--bg-primary); /* Dark text on the light yellow/gold base */
+    font-weight: bold;
+}
+
+/* Darker for Count 2 */
+.date-number.counter-2 {
+    background-color: var(--brown-mid1);
+}
+
+/* Darker for Count 3 */
+.date-number.counter-3 {
+    background-color: var(--brown-mid2);
+    color: white; /* Switch to white text for better contrast on darker backgrounds */
+}
+
+/* Darkest for Count 4 and above */
+.date-number.counter-4 {
+    background-color: var(--brown-dark);
+    color: white;
+}
+
+/* Style for days that aren't in the current month */
+.inactive {
+    color: #777;
+    cursor: default;
+    background-color: transparent !important;
+    outline: none !important;
+}
+
+.inactive:hover {
+    background-color: transparent;
+}
