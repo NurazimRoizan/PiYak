@@ -3,6 +3,19 @@ const GOOGLE_APP_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyK9fqXn-
 let DEFAULT_USER_ID = null; 
 const USER_ID_STORAGE_KEY = 'calendarUserId';
 
+// --- NEW MODE VARIABLES ---
+let currentAppMode = 'counter'; // 'counter' or 'period'
+const MODE_STORAGE_KEY = 'appMode';
+const PERIOD_SETTINGS_KEY = 'periodSettings';
+
+// --- NEW PERIOD SETTINGS ---
+// Default values will be loaded/overwritten by local storage
+let periodSettings = {
+    periodLength: 7, 
+    cycleLength: 28
+};
+let periodStartDate = null; // Last recorded start date
+
 // --- JSONP GLOBAL CALLBACK SETUP ---
 // This function will be called by the Apps Script once the data is ready.
 let resolveJsonpPromise;
@@ -49,9 +62,202 @@ const prevMonthBtn = document.getElementById('prevMonthBtn');
 const nextMonthBtn = document.getElementById('nextMonthBtn');
 const button1 = document.getElementById('button1');
 const button2 = document.getElementById('button2');
+const button3 = document.getElementById('button3');
 let selectedDate = null; 
 const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 const loadingOverlay = document.getElementById('loadingOverlay');
+
+// --- NEW DOM ELEMENTS ---
+const toggleModeBtn = document.getElementById('toggleModeBtn');
+const currentModeDisplay = document.getElementById('currentModeDisplay');
+const periodSetupModal = document.getElementById('periodSetupModal');
+const periodLengthInput = document.getElementById('periodLength');
+const cycleLengthInput = document.getElementById('cycleLength');
+const savePeriodSettingsBtn = document.getElementById('savePeriodSettingsBtn');
+
+// ------- Period FUnctions --------
+// Function to load settings from Local Storage
+function loadPeriodSettings() {
+    const savedSettings = localStorage.getItem(PERIOD_SETTINGS_KEY);
+    if (savedSettings) {
+        periodSettings = JSON.parse(savedSettings);
+        // Also load the last recorded start date from dailyCounters if available
+        const dates = Object.keys(dailyCounters).filter(key => dailyCounters[key] === 'start').sort();
+        periodStartDate = dates.length > 0 ? dates[dates.length - 1] : null;
+    }
+}
+
+// Function to calculate predicted period dates
+// Function to calculate predicted period dates
+function getPeriodStatus(dateKey) {
+    if (!periodStartDate) return null;
+
+    const startDate = new Date(periodStartDate + 'T00:00:00');
+    const currentDate = new Date(dateKey + 'T00:00:00');
+    const MS_PER_DAY = 24 * 60 * 60 * 1000;
+
+    // Days elapsed since the last recorded period start
+    const timeDiff = currentDate.getTime() - startDate.getTime();
+    const daysSinceStart = Math.round(timeDiff / MS_PER_DAY);
+
+    // --- NEW: Boundary Check ---
+    // If the current date is after the start of the next expected cycle,
+    // we stop showing predictions to avoid repetition.
+    if (daysSinceStart >= periodSettings.cycleLength) {
+        // We still need to check if the current date itself is marked as 'start' or 'period'.
+        // This handles days in the new, *unrecorded* cycle.
+        if (dailyCounters[dateKey] === 'start' || dailyCounters[dateKey] === 'period') {
+             return 'current_period';
+        }
+        return null; // Stop predictions if cycle length is exceeded
+    }
+    // ---------------------------
+
+    // Days into the current cycle (0-indexed cycle day, 0 being the start day)
+    const cycleDay = (daysSinceStart % periodSettings.cycleLength + periodSettings.cycleLength) % periodSettings.cycleLength;
+
+    if (daysSinceStart >= 0) {
+        // 1. Current Period (If date is within the recorded period duration)
+        if (dailyCounters[dateKey] === 'start' || dailyCounters[dateKey] === 'period') {
+             return 'current_period';
+        }
+        
+        // 2. Predicted Ovulation (Cycle day 14 is a common average, adjusted for cycle length)
+        const ovulationDay = periodSettings.cycleLength - 14; 
+        if (cycleDay === ovulationDay) {
+            return 'predicted_ovulation';
+        }
+
+        // 3. Fertile Window (e.g., 5 days before ovulation)
+        if (cycleDay >= ovulationDay - 5 && cycleDay < ovulationDay) {
+            return 'fertile_window';
+        }
+        
+        // 4. Predicted Next Period (Prediction only applies if it hasn't been recorded yet)
+        if (cycleDay < periodSettings.periodLength) {
+            // This is the prediction of the NEXT period, which starts on day 0 of the cycle.
+            // Since we've already checked for current_period above, this is the prediction.
+            return 'predicted_period';
+        }
+    }
+
+    return null; // Regular cycle day
+}
+
+// --- NEW MODE SWITCHING LOGIC ---
+
+function switchAppMode(newMode) {
+    const calendarContainer = document.getElementById('calendarGrid'); // Get the grid element
+    
+    if (newMode === 'period' && !localStorage.getItem(PERIOD_SETTINGS_KEY)) {
+        // If switching to Period mode for the first time, show setup modal
+        periodSetupModal.style.display = 'block';
+        return; 
+    }
+    
+    currentAppMode = newMode;
+    localStorage.setItem(MODE_STORAGE_KEY, newMode);
+
+    if (newMode === 'period') {
+        currentModeDisplay.textContent = 'Period';
+        toggleModeBtn.textContent = 'Switch to Counter Tracker';
+        button1.textContent = 'Mark Start Date 🩸';
+        button2.textContent = 'Mark End Date ✅';
+        button3.textContent = 'Clear Marking 🗑️'; 
+        button3.style.display = 'inline-block'; // Show the new button
+
+        // CRITICAL: Add class to calendar grid
+        calendarContainer.classList.add('period-mode');
+        // Ensure period settings are loaded before rendering
+        loadPeriodSettings(); 
+    } else {
+        currentModeDisplay.textContent = 'Counter';
+        toggleModeBtn.textContent = 'Switch to Period Tracker';
+        button1.textContent = 'I Pooped!';
+        button2.textContent = 'Just kidding I no poop';
+        button3.style.display = 'none'; // Hide the period-specific button
+        // CRITICAL: Remove class from calendar grid
+        calendarContainer.classList.remove('period-mode');
+    }
+
+    // Re-render the calendar to apply new styles
+    renderCalendar(currentMonth, currentYear);
+}
+
+// Event listener for the mode toggle button
+toggleModeBtn.addEventListener('click', () => {
+    const newMode = currentAppMode === 'counter' ? 'period' : 'counter';
+    switchAppMode(newMode);
+});
+
+// Event listener for saving period settings
+savePeriodSettingsBtn.addEventListener('click', () => {
+    const pLen = parseInt(periodLengthInput.value);
+    const cLen = parseInt(cycleLengthInput.value);
+
+    if (pLen >= 3 && cLen >= 20) {
+        periodSettings.periodLength = pLen;
+        periodSettings.cycleLength = cLen;
+        localStorage.setItem(PERIOD_SETTINGS_KEY, JSON.stringify(periodSettings));
+        periodSetupModal.style.display = 'none';
+        switchAppMode('period'); // Finalize switch
+    } else {
+        alert("Please enter valid lengths (Period >= 3, Cycle >= 20).");
+    }
+});
+
+// New function to mark all days between start and end as 'flow'
+function fillPeriodFlow(startDateKey, endDateKey) {
+    const start = new Date(startDateKey + 'T00:00:00');
+    const end = new Date(endDateKey + 'T00:00:00');
+
+    // Make sure we update the start day status from 'start' to 'flow' for consistent rendering
+    // We update this *after* the initial submission when fillPeriodFlow is called.
+    // NOTE: We keep 'start' and 'end' for data submission but rely on 'flow' for color fill.
+    
+    // Iterate day by day
+    for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+        // Format date back to YYYY-MM-DD key
+        const dateKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+
+        // Only mark as flow if it's not the actual 'start' or 'end' day
+        if (dateKey === startDateKey) {
+            dailyCounters[dateKey] = 'start'; // Re-set to start
+        } else if (dateKey === endDateKey) {
+            dailyCounters[dateKey] = 'end'; // Re-set to end
+        } else {
+            dailyCounters[dateKey] = 'flow'; // Mark in between days as flow
+        }
+        
+        // Submit the 'flow' data back to the sheet to save the marked day
+        submitFlowData(dateKey, dailyCounters[dateKey]);
+    }
+    
+    // After marking all days and submitting, re-render the calendar
+    renderCalendar(currentMonth, currentYear);
+}
+
+// Helper to submit flow/start/end data silently to the sheet
+function submitFlowData(date, status) {
+    const dataToSend = {
+        'userID': DEFAULT_USER_ID, 
+        'date': date, 
+        'counterValue': status
+    };
+    const formData = encodeFormData(dataToSend);
+
+    fetch(GOOGLE_APP_SCRIPT_URL, {
+        method: 'POST',
+        mode: 'no-cors', 
+        cache: 'no-cache',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded' 
+        },
+        body: formData 
+    })
+    .then(() => console.log(`Flow submission sent for ${date}: status ${status}`))
+    .catch(error => console.error('Flow submission failed:', error));
+}
 
 // --- NEW FUNCTION: RETRIEVE DATA VIA JSONP (GET) ---
 function retrieveDailyCounters(userId) {
@@ -82,6 +288,10 @@ async function initializeUserId() {
     
     if (savedId) {
         // Show loading overlay while we fetch the data
+        // Load the stored mode
+        const savedMode = localStorage.getItem(MODE_STORAGE_KEY) || 'counter';
+        switchAppMode(savedMode);
+
         loadingOverlay.style.display = 'flex';
 
         DEFAULT_USER_ID = savedId;
@@ -180,7 +390,34 @@ function renderCalendar(month, year) {
         if (dateKey === selectedDate) {
             dateDiv.classList.add('selected-date');
         }
-        applyCountStyle(dateDiv, count);
+        // Check if we are in Period Mode and apply period styles
+        if (currentAppMode === 'period') {
+            // Remove existing counter styles
+            dateDiv.classList.remove('has-counter', 'counter-1', 'counter-2', 'counter-3', 'counter-4', 'selected-date');
+            
+            const periodStatus = getPeriodStatus(dateKey);
+            
+            // Remove all previous period classes for safety
+            dateDiv.classList.remove('current_period', 'predicted_period', 'predicted_ovulation', 'fertile_window');
+
+            // Apply new period class
+            if (periodStatus) {
+                dateDiv.classList.add(periodStatus);
+            }
+
+            // Check if this date was marked as a START date in the sheet
+            if (dailyCounters[dateKey] === 'start') {
+                dateDiv.classList.add('period_start');
+            } else if (dailyCounters[dateKey] === 'end') { // NEW END CHECK
+                dateDiv.classList.add('period_end');
+            } else if (dailyCounters[dateKey] === 'flow') { // NEW FLOW CHECK
+                dateDiv.classList.add('period_flow');
+            }
+        } else {
+            // If not in period mode, apply standard counter styles
+            applyCountStyle(dateDiv, count);
+        }
+        //applyCountStyle(dateDiv, count);
         dateDiv.addEventListener('click', function() {
             const prevSelected = document.querySelector('.selected-date');
             if (prevSelected) {
@@ -201,33 +438,65 @@ function getDateKey(year, month, day) {
     return `${year}-${monthStr}-${dayStr}`;
 }
 
-// --- SUBMISSION LOGIC (Unchanged) ---
-function updateCounterAndSubmit(amount) {
-    if (!selectedDate || !DEFAULT_USER_ID) {
+// Update to remove dependence on 'amount' for period mode
+function updateCounterAndSubmit(dateKey, status) {
+    if (!dateKey || !DEFAULT_USER_ID) {
         alert('Please enter your User ID and select a date first.');
         return;
     }
-
-    // 1. Update Counter Locally
-    let currentCount = dailyCounters[selectedDate] || 0;
-    currentCount += amount;
-    if (currentCount < 0) currentCount = 0;
-    dailyCounters[selectedDate] = currentCount;
-
-    // 2. Re-render the calendar
-    renderCalendar(currentMonth, currentYear);
     
-    // 3. Prepare the data payload
+    let valueToSubmit = status;
+
+    if (currentAppMode === 'period') {
+        // --- Period Mode Logic ---
+        if (status === 'start') {
+            periodStartDate = dateKey;
+            localStorage.setItem(PERIOD_SETTINGS_KEY, JSON.stringify(periodSettings));
+            alert("Period start date marked! Cycle predictions updated.");
+            
+        } else if (status === 'end') { 
+            if (!periodStartDate || dateKey <= periodStartDate) {
+                alert("Please mark a 'Start Date' on an earlier day before marking the end.");
+                return;
+            }
+            // CRITICAL STEP: Fill the days between start and end
+            fillPeriodFlow(periodStartDate, dateKey);
+            alert(`Period flow marked from ${periodStartDate} to ${dateKey}.`);
+            
+        } else if (status === 'clear') {
+            // Clearing requires no special logic here, just deletion below
+        }
+        
+        // Update local counter data
+        if (status === 'clear') {
+             // Clear the selected date
+            delete dailyCounters[dateKey];
+        } else {
+            // Set the selected date status ('start', 'end', or 'flow' if called from flow filler)
+            dailyCounters[dateKey] = status;
+        }
+
+    } else {
+        // --- Counter Mode Logic (Still relies on 'amount' being passed for +/-) ---
+        let amount = status; // Revert status back to 'amount' for counter mode
+        let currentCount = dailyCounters[dateKey] || 0;
+        currentCount += amount;
+        if (currentCount < 0) currentCount = 0;
+        dailyCounters[dateKey] = currentCount;
+        valueToSubmit = currentCount;
+    }
+    
+    renderCalendar(currentMonth, currentYear);
+
+    // Submission logic (unchanged)
     const dataToSend = {
         'userID': DEFAULT_USER_ID, 
-        'date': selectedDate, 
-        'counterValue': currentCount
+        'date': dateKey, 
+        'counterValue': valueToSubmit
     };
-
-    // 4. Convert to URL-encoded form data string
     const formData = encodeFormData(dataToSend);
-
-    // 5. Send data silently (POST)
+    // ... (fetch call) ...
+    
     fetch(GOOGLE_APP_SCRIPT_URL, {
         method: 'POST',
         mode: 'no-cors', 
@@ -238,17 +507,43 @@ function updateCounterAndSubmit(amount) {
         body: formData 
     })
     .then(() => {
-        console.log(`Silent submission sent for ${selectedDate} by ${DEFAULT_USER_ID}: count ${currentCount}`);
+        console.log(`Submission sent for ${dateKey}: value ${valueToSubmit}`);
     })
     .catch(error => {
         console.error('Submission failed:', error);
-        alert('Error submitting data. Check the browser console.');
     });
 }
 
 // --- EVENT HANDLERS ---
-button1.addEventListener('click', () => { if (DEFAULT_USER_ID) updateCounterAndSubmit(1); else alert('Please enter your User ID first.'); }); 
-button2.addEventListener('click', () => { if (DEFAULT_USER_ID) updateCounterAndSubmit(-1); else alert('Please enter your User ID first.'); });
+// Button 1: Start/Increment
+button1.addEventListener('click', () => { 
+    if (!DEFAULT_USER_ID || !selectedDate) return alert('Select date and enter User ID.');
+    if (currentAppMode === 'period') {
+        updateCounterAndSubmit(selectedDate, 'start');
+    } else {
+        updateCounterAndSubmit(selectedDate, 1); // Counter mode increment
+    }
+}); 
+
+// Button 2: End/Decrement
+button2.addEventListener('click', () => { 
+    if (!DEFAULT_USER_ID || !selectedDate) return alert('Select date and enter User ID.');
+    if (currentAppMode === 'period') {
+        updateCounterAndSubmit(selectedDate, 'end');
+    } else {
+        updateCounterAndSubmit(selectedDate, -1); // Counter mode decrement
+    }
+});
+
+// NEW BUTTON 3: Clear Marking (Period Mode Only)
+button3.addEventListener('click', () => { 
+    if (!DEFAULT_USER_ID || !selectedDate) return alert('Select date and enter User ID.');
+    if (currentAppMode === 'period') {
+        // Use 'clear' status which is handled in updateCounterAndSubmit
+        updateCounterAndSubmit(selectedDate, 'clear'); 
+        alert(`Marking cleared for ${selectedDate}.`);
+    }
+});
 
 prevMonthBtn.addEventListener('click', () => {
     if (!DEFAULT_USER_ID) return;

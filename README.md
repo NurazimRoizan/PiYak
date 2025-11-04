@@ -5,6 +5,17 @@
 
 Welcome to the repo for Poop & Flow Tracker, the Progressive Web App (PWA) that finally brings your two most essential bodily functions together in one place: your period calendar and your daily "presents" (aka poop). We're using the totally chill Google Forms API for data storage, so your precious intel is safe and sound, plus you can creep on your friends' anonymized data, because, you know, science!
 
+## TODO
+
+    - [X] Poop Tracker
+    - [X] Website up and running
+    - [X] PWA Setup
+    - [X] Period Tracker
+    - [X] Period Prediction
+    - [ ] Notification Bar
+    - [ ] Add Friends
+
+
 ## The  Features
 
 * Pocket PWA Power: Install this bad boy on your phone, desktop, or even your smart fridge (if it runs a browser). It’s fast, works offline, and basically lives in your pocket.
@@ -16,8 +27,8 @@ Welcome to the repo for Poop & Flow Tracker, the Progressive Web App (PWA) that 
 ### Download on ur phone
 
 * Open website
-* Click download
-* Add to HomePage
+* Some phone will have a pop-up to install the web app. Ig you not one of them, try finding `Add to Home Screen` button on your browser.
+* Enjoy your shit
 
 ## 🛠️ Usage
 
@@ -44,6 +55,6 @@ You think this is quirky? Prove it! We love contributions. Feel free to jump in 
 
 ## Legal Stuff (Boring, but necessary)
 
-**MIT License**  Check out `LICENSE` if you really want to read the fine print.
+MIT License. Check out `LICENSE` if you really want to read the fine print.
 
 

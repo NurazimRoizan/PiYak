@@ -203,3 +203,82 @@ h1 {
     color: var(--text-color); 
     font-weight: bold;
 }
+
+/* --- Period Tracking Mode Styles --- */
+
+/* Style for the container when in Period Mode (Optional: visually confirm mode switch) */
+
+/* .calendar-grid.period-mode { */
+    /* Example: Add a subtle border or glow specific to this mode if desired */
+    /* border: 1px solid #FF69B4; */
+/* } */
+
+/* 1. Current Period (Recorded Start or Continuation) */
+.date-number.current_period {
+    background-color: #A05273 !important; /* Muted deep pink/maroon */
+    color: white !important;
+    font-weight: bold;
+    border: 1px solid #C71585;
+}
+
+/* 1b. The Recorded Start Date */
+.date-number.period_start {
+    background-color: #C71585 !important; /* Brighter pink */
+    color: white !important;
+    border: 2px solid #FF69B4;
+    transform: scale(1.05); /* Make the start date stand out slightly */
+}
+
+/* 2. Predicted Period (The days predicted to be the next flow) */
+.date-number.predicted_period {
+    background-color: #614660; /* Darker, slightly translucent pink */
+    color: #FFC0CB; /* Light pink text */
+    border: 1px dashed #C71585; /* Dashed border for prediction */
+}
+
+/* 3. Predicted Ovulation Day */
+.date-number.predicted_ovulation {
+    background-color: #FFD700; /* Gold */
+    color: #1e1e1e; /* Dark text for contrast */
+    font-weight: bold;
+    border: 2px solid #FFA500;
+}
+
+/* 4. Fertile Window (Days leading up to ovulation) */
+.date-number.fertile_window {
+    background-color: #4CAF50; /* Green color, symbolizing fertility */
+    color: white;
+    border: 1px solid #388E3C;
+}
+
+/* Override existing styles when in Period Mode */
+.date-number.period-mode:hover {
+    cursor: pointer;
+    background-color: #555 !important;
+}
+
+/* Ensure selected date is visible regardless of mode */
+.date-number.selected-date {
+    /* Use a common highlight color */
+    box-shadow: 0 0 0 3px #8c9eff inset !important;
+    border-color: #8c9eff !important;
+}
+
+/* --- NEW: Period End and Flow Styles --- */
+
+/* Reusing the start color for the end date */
+.date-number.period_end {
+    /* Use the same background as the start date */
+    background-color: #C71585 !important; 
+    color: white !important;
+    border: 2px solid #FF69B4;
+    font-weight: bold;
+}
+
+/* Style for the days within the manually marked period flow */
+.date-number.period_flow {
+    /* Muted deep pink/maroon, similar to current_period, but distinct */
+    background-color: #8C4769 !important; 
+    color: white !important;
+    border: 1px solid #C71585;
+}
