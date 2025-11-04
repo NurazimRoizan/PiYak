@@ -51,7 +51,7 @@ const button1 = document.getElementById('button1');
 const button2 = document.getElementById('button2');
 let selectedDate = null; 
 const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-
+const loadingOverlay = document.getElementById('loadingOverlay');
 
 // --- NEW FUNCTION: RETRIEVE DATA VIA JSONP (GET) ---
 function retrieveDailyCounters(userId) {
@@ -81,6 +81,9 @@ async function initializeUserId() {
     const savedId = localStorage.getItem(USER_ID_STORAGE_KEY);
     
     if (savedId) {
+        // Show loading overlay while we fetch the data
+        loadingOverlay.style.display = 'flex';
+
         DEFAULT_USER_ID = savedId;
         currentUserDisplay.textContent = DEFAULT_USER_ID;
         userIdInputSection.style.display = 'none';
@@ -98,14 +101,16 @@ async function initializeUserId() {
         
         // Render calendar with the retrieved data
         renderCalendar(currentMonth, currentYear);
+        loadingOverlay.style.display = 'none'; // Hide loading after render!
         
     } else {
         DEFAULT_USER_ID = null;
+        // If no ID found, show input and hide calendar/loading
+        loadingOverlay.style.display = 'none'; // Ensure hidden if no ID
         currentUserDisplay.textContent = 'Not Set';
         userIdInputSection.style.display = 'block';
         userIdInput.value = '';
         
-        document.querySelector('.container').style.opacity = 0.5;
         document.querySelector('.calendar-container').style.display = 'none'; 
     }
 }

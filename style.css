@@ -21,7 +21,7 @@
 body {
     font-family: Arial, sans-serif;
     text-align: center;
-    padding: 20px;
+    padding: 10px;
     background-color: var(--bg-primary);
     color: var(--text-color);
 }
@@ -29,7 +29,7 @@ body {
 .container {
     max-width: 700px;
     margin: 0 auto;
-    padding: 30px;
+    padding: 10px;
     background-color: var(--bg-secondary);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
     border-radius: 8px;
@@ -163,4 +163,43 @@ h1 {
 
 .inactive:hover {
     background-color: transparent;
+}
+
+/* --- NEW: Spinner Styles for Loading Overlay --- */
+
+/* The element that holds the spinning border */
+.spinner {
+    border: 4px solid rgba(255, 255, 255, 0.3); /* Light, transparent border */
+    border-top: 4px solid var(--highlight-color); /* The visible, spinning color */
+    border-radius: 50%; /* Makes it perfectly round */
+    width: 30px;
+    height: 30px;
+    animation: spin 1s linear infinite; /* Apply the animation */
+    margin-right: 15px; /* Space between spinner and text */
+}
+
+/* Define the spinning animation */
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.loading-overlay {
+    /* Positioning and Visibility */
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex; /* Starts as 'flex' but will be toggled by JS */
+    justify-content: center;
+    align-items: center;
+    z-index: 10; 
+    border-radius: 8px; /* Matches the container corner radius */
+    
+    /* Appearance */
+    background: rgba(45, 45, 48, 0.95); /* Semi-transparent dark background */
+    font-size: 1.5em; 
+    color: var(--text-color); 
+    font-weight: bold;
 }
