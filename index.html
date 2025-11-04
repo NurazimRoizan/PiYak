@@ -9,7 +9,14 @@
 <body>
 
     <div class="container">
-        <h1>PiYak Calendar</h1>
+        <div id="userIdInputSection">
+            <h2>👋 Welcome! Please Enter Your User ID:</h2>
+            <input type="text" id="userIdInput" placeholder="Enter your name or ID" style="padding: 10px; margin-bottom: 15px; width: 80%;">
+            <button id="saveUserIdBtn" style="background-color: #28a745; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer;">Start Tracking</button>
+            <hr style="margin-top: 20px;">
+        </div>
+        <div class="calendar-container">
+        <h1>PiYak Calendar (<span id="currentUserDisplay">Loading...</span>)</h1>
 
         <div class="calendar-container">
             <div class="calendar-header">
@@ -31,6 +38,13 @@
         <div class="buttons-group">
             <button id="button1">I Pooped!</button>
             <button id="button2">Just kidding I no poop</button>
+        </div>
+
+        <div style="margin-top: 20px;">
+        <button id="resetUserIdBtn" style="background-color: #dc3545; color: white; padding: 5px 15px; border: none; border-radius: 5px; cursor: pointer; font-size: 0.9em;">
+            Reset User ID
+        </button>
+        </div>
         </div>
     </div>
 
