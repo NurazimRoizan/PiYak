@@ -25,6 +25,9 @@
         </div>
     </div>
     <div class="container">
+        <p id="date-display" >Loading date...</p>
+        <h1 id="weekDay-display" >Loading day...</h1>
+        <div id="loginStatus"><p id="status-bar" >Ovulation in 11 Days</p></div>
         <div id="userIdInputSection">
             <h2>👋 Welcome! Please Enter Your User ID:</h2>
             <input type="text" id="userIdInput" placeholder="Enter your name or ID" style="padding: 10px; margin-bottom: 15px; width: 80%;">
@@ -32,7 +35,6 @@
             <hr style="margin-top: 20px;">
         </div>
         <div class="calendar-container">
-        <h1>PiYak Calendar (<span id="currentUserDisplay">Loading...</span>)</h1>
 
         <div style="text-align: center; margin: 10px 0; font-size: 0.9em;">
             Current Mode: <span id="currentModeDisplay" style="font-weight: bold; color: #8c9eff;">Beyak</span>
@@ -73,6 +75,7 @@
         </button>
         </div>
         </div>
+        <div id="loginStatus" style="text-align: right;"><p id="loginStatusText">Not Logged-In</p></div>
     </div>
 
     <script src="script.js"></script>

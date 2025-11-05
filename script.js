@@ -23,14 +23,41 @@ let rejectJsonpPromise;
 
 window.handleRetrievedData = function(data) {
     if (resolveJsonpPromise) {
-        // Resolve or reject the Promise based on the data received
         if (data.error) {
             rejectJsonpPromise(new Error(data.error));
         } else {
-            resolveJsonpPromise(data.dailyCounters);
+            // NEW PARSING LOGIC: Split the data into two dictionaries
+            const parsedCounters = {};
+            const parsedStatuses = {};
+
+            for (const [dateKey, combinedValue] of Object.entries(data.dailyCounters)) {
+                if (typeof combinedValue === 'string' && combinedValue.includes('|')) {
+                    const parts = combinedValue.split('|');
+                    const countPart = parts[0].trim();
+                    const statusPart = parts[1].trim();
+                    
+                    // Parse Counter: Convert to number if non-empty, otherwise 0
+                    parsedCounters[dateKey] = countPart ? parseInt(countPart) : 0;
+                    
+                    // Parse Status: Store if non-empty
+                    if (statusPart) {
+                        parsedStatuses[dateKey] = statusPart;
+                    }
+                } else if (!isNaN(Number(combinedValue))) {
+                    // Handle old data format (only counter)
+                    parsedCounters[dateKey] = parseInt(combinedValue);
+                } else {
+                     // Handle old data format (only period status, if possible)
+                     parsedStatuses[dateKey] = combinedValue;
+                }
+            }
+            
+            resolveJsonpPromise({ 
+                counts: parsedCounters, 
+                statuses: parsedStatuses 
+            });
         }
     }
-    // Clean up the dynamically created script tag
     const scriptTag = document.getElementById('jsonpScript');
     if (scriptTag) {
         scriptTag.remove();
@@ -48,13 +75,15 @@ function encodeFormData(data) {
 const today = new Date();
 let currentMonth = today.getMonth();
 let currentYear = today.getFullYear();
-let dailyCounters = {}; 
+let dailyCounters = {}; // Now only stores the Period Status (e.g., 'start', 'predicted_ovulation')
+let dailyCounts = {};   // NEW: Will store the numerical Counter values (e.g., 5)
+// ... existing variables ...
 
 // --- DOM ELEMENTS ---
 const userIdInputSection = document.getElementById('userIdInputSection');
 const userIdInput = document.getElementById('userIdInput');
 const saveUserIdBtn = document.getElementById('saveUserIdBtn');
-const currentUserDisplay = document.getElementById('currentUserDisplay');
+//const currentUserDisplay = document.getElementById('currentUserDisplay');
 const resetUserIdBtn = document.getElementById('resetUserIdBtn'); 
 const monthYearDisplay = document.getElementById('monthYearDisplay');
 const calendarGrid = document.getElementById('calendarGrid');
@@ -74,6 +103,19 @@ const periodSetupModal = document.getElementById('periodSetupModal');
 const periodLengthInput = document.getElementById('periodLength');
 const cycleLengthInput = document.getElementById('cycleLength');
 const savePeriodSettingsBtn = document.getElementById('savePeriodSettingsBtn');
+const todayDate = document.getElementById('date-display');
+const todayWeekDay = document.getElementById('weekDay-display');
+const loginStatusText = document.getElementById('loginStatusText');
+const loginStatus = document.getElementById('loginStatus');
+const statusBar = document.getElementById('status-bar');
+// Format the date into a readable string (e.g., "Wednesday, November 5, 2025")
+// This method automatically handles locale formatting for a clean display.
+const formattedDate = today.toLocaleDateString('en-GB', {
+    month: 'long',
+    day: 'numeric'
+});
+todayDate.textContent = formattedDate;
+todayWeekDay.textContent = (today.toLocaleDateString('en-GB', {weekday: 'long'}));
 
 // ------- Period FUnctions --------
 // Function to load settings from Local Storage
@@ -92,6 +134,14 @@ function loadPeriodSettings() {
 function getPeriodStatus(dateKey) {
     if (!periodStartDate) return null;
 
+    // --- NEW: Check for Existing Status in Sheet Data (dailyCounters) ---
+    const sheetStatus = dailyCounters[dateKey];
+    if (sheetStatus) {
+        // If any status ('start', 'end', 'flow', 'predicted_ovulation', etc.) is found,
+        // we use that status for coloring and stop further prediction calculation.
+        return sheetStatus;
+    }
+
     const startDate = new Date(periodStartDate + 'T00:00:00');
     const currentDate = new Date(dateKey + 'T00:00:00');
     const MS_PER_DAY = 24 * 60 * 60 * 1000;
@@ -104,12 +154,11 @@ function getPeriodStatus(dateKey) {
     // If the current date is after the start of the next expected cycle,
     // we stop showing predictions to avoid repetition.
     if (daysSinceStart >= periodSettings.cycleLength) {
-        // We still need to check if the current date itself is marked as 'start' or 'period'.
-        // This handles days in the new, *unrecorded* cycle.
-        if (dailyCounters[dateKey] === 'start' || dailyCounters[dateKey] === 'period') {
-             return 'current_period';
+        // If outside the prediction window, only return recorded period data
+        if (['start', 'end', 'flow'].includes(dailyCounters[dateKey])) {
+             return dailyCounters[dateKey]; // Return the actual recorded status
         }
-        return null; // Stop predictions if cycle length is exceeded
+        return null; // Stop further prediction display/logging
     }
     // ---------------------------
 
@@ -118,9 +167,9 @@ function getPeriodStatus(dateKey) {
 
     if (daysSinceStart >= 0) {
         // 1. Current Period (If date is within the recorded period duration)
-        if (dailyCounters[dateKey] === 'start' || dailyCounters[dateKey] === 'period') {
-             return 'current_period';
-        }
+        // if (['start', 'end', 'flow'].includes(dailyCounters[dateKey])) {
+        //      return dailyCounters[dateKey]; 
+        // }
         
         // 2. Predicted Ovulation (Cycle day 14 is a common average, adjusted for cycle length)
         const ovulationDay = periodSettings.cycleLength - 14; 
@@ -165,6 +214,7 @@ function switchAppMode(newMode) {
         button2.textContent = 'Mark End Date ✅';
         button3.textContent = 'Clear Marking 🗑️'; 
         button3.style.display = 'inline-block'; // Show the new button
+        statusBar.style.display = 'block';
 
         // CRITICAL: Add class to calendar grid
         calendarContainer.classList.add('period-mode');
@@ -176,6 +226,7 @@ function switchAppMode(newMode) {
         button1.textContent = 'I Pooped!';
         button2.textContent = 'Just kidding I no poop';
         button3.style.display = 'none'; // Hide the period-specific button
+        statusBar.style.display = 'none';
         // CRITICAL: Remove class from calendar grid
         calendarContainer.classList.remove('period-mode');
     }
@@ -238,6 +289,149 @@ function fillPeriodFlow(startDateKey, endDateKey) {
 }
 
 // Helper to submit flow/start/end data silently to the sheet
+
+// --- NEW FUNCTION: Calculate Days Until Next Ovulation ---
+// --- UPDATED FUNCTION: Calculate Next Prediction Status ---
+function calculateNextOvulation() {
+    if (!periodStartDate || currentAppMode !== 'period') {
+        statusBar.textContent = "Prediction Status: Awaiting Start Date...";
+        return;
+    }
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Normalize today's date
+
+    const MS_PER_DAY = 24 * 60 * 60 * 1000;
+    const cycleLength = periodSettings.cycleLength;
+    const periodLength = periodSettings.periodLength;
+    const ovulationDayOffset = cycleLength - 14; // Day index for Ovulation
+    const periodStartOffset = 0; // Day index for Next Period Start
+
+    // 1. Find the start of the current cycle (or the last recorded cycle)
+    let startDateObj = new Date(periodStartDate + 'T00:00:00');
+    startDateObj.setHours(0, 0, 0, 0);
+
+    // Advance the cycle start date until it's the start of the current/next cycle (relative to today).
+    while (startDateObj.getTime() < today.getTime()) {
+        startDateObj.setDate(startDateObj.getDate() + cycleLength);
+    }
+    
+    // ----------------------------------------------------
+    // --- STEP 1: Check Next Predicted OVULATION ---
+    // ----------------------------------------------------
+    let nextOvulationDate = new Date(startDateObj);
+    
+    // If the start date is in the future, roll back one cycle length to find the start of the current cycle
+    if (nextOvulationDate.getTime() > today.getTime()) {
+         nextOvulationDate.setDate(nextOvulationDate.getDate() - cycleLength);
+    }
+    
+    // Add the ovulation offset to the closest past/current cycle start
+    nextOvulationDate.setDate(nextOvulationDate.getDate() + ovulationDayOffset);
+
+    // If the calculated ovulation day is in the past, advance to the next cycle's ovulation
+    while (nextOvulationDate.getTime() < today.getTime()) {
+        nextOvulationDate.setDate(nextOvulationDate.getDate() + cycleLength);
+    }
+    
+    const daysUntilOvulation = Math.ceil((nextOvulationDate.getTime() - today.getTime()) / MS_PER_DAY);
+    
+    // Check if ovulation is today or in the future
+    if (daysUntilOvulation >= 0) {
+        if (daysUntilOvulation === 0) {
+            statusBar.textContent = `🎉 Ovulation is TODAY!`;
+        } else {
+            statusBar.textContent = `Next Ovulation in ${daysUntilOvulation} days.`;
+        }
+        return; // Exit if a future ovulation date is found
+    }
+    
+    // ----------------------------------------------------
+    // --- STEP 2: Check Next Predicted PERIOD ---
+    // ----------------------------------------------------
+    // If ovulation is in the past, calculate the next period start
+    
+    // Roll back startDateObj by one cycle to get the start of the cycle that contains today
+    startDateObj.setDate(startDateObj.getDate() - cycleLength);
+    
+    // The next predicted period starts at the beginning of the *next* cycle
+    let nextPeriodDate = new Date(startDateObj);
+    nextPeriodDate.setDate(nextPeriodDate.getDate() + cycleLength + periodStartOffset);
+
+    // Ensure we are checking the future period
+    while (nextPeriodDate.getTime() < today.getTime()) {
+         nextPeriodDate.setDate(nextPeriodDate.getDate() + cycleLength);
+    }
+
+    const daysUntilPeriod = Math.ceil((nextPeriodDate.getTime() - today.getTime()) / MS_PER_DAY);
+
+    // Check if period start is today or in the future
+    if (daysUntilPeriod >= 0) {
+        if (daysUntilPeriod === 0) {
+            statusBar.textContent = `🩸 Period is TODAY (Predicted)!`;
+        } else {
+            statusBar.textContent = `Next Predicted Period in ${daysUntilPeriod} days.`;
+        }
+        return; // Exit if a future period date is found
+    }
+
+    // ----------------------------------------------------
+    // --- STEP 3: Fallback (If both are past) ---
+    // ----------------------------------------------------
+    // If both ovulation and period start are mathematically in the past,
+    // it means the user has not marked their latest period.
+    statusBar.textContent = `⚠️ You should have your period now. Please mark the Start Date.`;
+}
+
+// --- CORRECTED FUNCTION: Log Predictions for ONLY the Current Cycle ---
+// --- UPDATED FUNCTION: Log Predictions to Google Sheet ---
+// --- UPDATED FUNCTION: Log Predictions to Google Sheet (Called only on 'start') ---
+function submitPredictions() {
+    // This function assumes periodStartDate and periodSettings are freshly updated.
+    if (!DEFAULT_USER_ID || !periodStartDate) {
+        return;
+    }
+
+    const MS_PER_DAY = 24 * 60 * 60 * 1000;
+    const startDateObj = new Date(periodStartDate + 'T00:00:00');
+    
+    // Calculate the end date of the predicted cycle (last start date + cycle length days)
+    const predictionEndDateObj = new Date(startDateObj);
+    predictionEndDateObj.setDate(predictionEndDateObj.getDate() + periodSettings.cycleLength - 1);
+
+    // Iterate day by day from the start date, up to the end of the predicted cycle
+    for (let d = new Date(startDateObj); d <= predictionEndDateObj; d.setDate(d.getDate() + 1)) {
+        const dateKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+        
+        // Skip prediction logging for the actual start date itself (it's submitted separately as 'start')
+        if (dateKey === periodStartDate) continue; 
+
+        // Get the prediction status
+        const status = getPeriodStatus(dateKey); // Can return a string or null
+
+        // CRITICAL FIX: Ensure status is a string before using startsWith
+        if (typeof status === 'string' && (status.startsWith('predicted_') || status.endsWith('_window'))) {
+            
+            // CRITICAL CHECK: Only submit if the day is currently UNMARKED by the user.
+            const sheetStatus = dailyCounters[dateKey];
+            
+            // If the sheet status is not manually marked ('start', 'end', 'flow')
+            if (!['start', 'end', 'flow'].includes(sheetStatus)) {
+                
+                // If the status is changing or if the status is currently null (not logged), submit it.
+                if (sheetStatus !== status) {
+                    
+                    // Update local counter data with the prediction status
+                    dailyCounters[dateKey] = status; 
+                    
+                    // Submit the prediction status to the Google Sheet
+                    submitFlowData(dateKey, status);
+                }
+            }
+        }
+    }
+}
+
 function submitFlowData(date, status) {
     const dataToSend = {
         'userID': DEFAULT_USER_ID, 
@@ -295,7 +489,7 @@ async function initializeUserId() {
         loadingOverlay.style.display = 'flex';
 
         DEFAULT_USER_ID = savedId;
-        currentUserDisplay.textContent = DEFAULT_USER_ID;
+        //currentUserDisplay.textContent = DEFAULT_USER_ID;
         userIdInputSection.style.display = 'none';
         
         document.querySelector('.container').style.opacity = 1;
@@ -303,24 +497,35 @@ async function initializeUserId() {
 
         // NEW: Wait for the retrieved data using JSONP
         try {
-            dailyCounters = await retrieveDailyCounters(DEFAULT_USER_ID); 
+            // dailyData now returns an object { counts, statuses }
+            const dailyData = await retrieveDailyCounters(DEFAULT_USER_ID); 
+            
+            dailyCounts = dailyData.counts;       // NEW: Populate numerical counters
+            dailyCounters = dailyData.statuses;   // EXISTING: Now stores only period statuses
+            
         } catch (e) {
             console.error('Failed to load existing data. Starting count from zero.', e);
+            dailyCounts = {};
             dailyCounters = {};
         }
         
         // Render calendar with the retrieved data
         renderCalendar(currentMonth, currentYear);
         loadingOverlay.style.display = 'none'; // Hide loading after render!
+        loginStatusText.textContent = "Currently logged-in as "+DEFAULT_USER_ID;
+        loginStatus.style.display = 'block';
+        loginStatusText.style.display = 'block';
         
     } else {
         DEFAULT_USER_ID = null;
         // If no ID found, show input and hide calendar/loading
         loadingOverlay.style.display = 'none'; // Ensure hidden if no ID
-        currentUserDisplay.textContent = 'Not Set';
+        //currentUserDisplay.textContent = 'Not Set';
         userIdInputSection.style.display = 'block';
-        userIdInput.value = '';
         
+        userIdInput.value = '';
+        loginStatus.style.display = 'none';
+        loginStatusText.style.display = 'none';
         document.querySelector('.calendar-container').style.display = 'none'; 
     }
 }
@@ -394,7 +599,6 @@ function renderCalendar(month, year) {
         if (currentAppMode === 'period') {
             // Remove existing counter styles
             dateDiv.classList.remove('has-counter', 'counter-1', 'counter-2', 'counter-3', 'counter-4', 'selected-date');
-            
             const periodStatus = getPeriodStatus(dateKey);
             
             // Remove all previous period classes for safety
@@ -412,9 +616,17 @@ function renderCalendar(month, year) {
                 dateDiv.classList.add('period_end');
             } else if (dailyCounters[dateKey] === 'flow') { // NEW FLOW CHECK
                 dateDiv.classList.add('period_flow');
+            } else if (dailyCounters[dateKey] === 'predicted_period') { // NEW CHECK
+                dateDiv.classList.add('predicted_period');
+            } else if (dailyCounters[dateKey] === 'predicted_ovulation') { // NEW CHECK
+                dateDiv.classList.add('predicted_ovulation');
+            } else if (dailyCounters[dateKey] === 'fertile_window') { // NEW CHECK
+                dateDiv.classList.add('fertile_window');
             }
         } else {
             // If not in period mode, apply standard counter styles
+            // CRITICAL CHANGE: Use dailyCounts for numerical value
+            const count = dailyCounts[dateKey] || 0; 
             applyCountStyle(dateDiv, count);
         }
         //applyCountStyle(dateDiv, count);
@@ -425,11 +637,13 @@ function renderCalendar(month, year) {
             }
             dateDiv.classList.add('selected-date');
             selectedDate = dateKey;
-            const currentCount = dailyCounters[selectedDate] || 0;
-            console.log(`Selected date: ${selectedDate}. Current count: ${currentCount}`);
+            const currentCount = dailyCounts[selectedDate] || 0;
+            const currentStatus = dailyCounters[selectedDate] || 0;
+            console.log(`Selected date: ${selectedDate}. Current count: ${currentCount}.Current status:${currentStatus}`);
         });
         calendarGrid.appendChild(dateDiv);
     }
+    calculateNextOvulation();
 }
 
 function getDateKey(year, month, day) {
@@ -452,6 +666,8 @@ function updateCounterAndSubmit(dateKey, status) {
         if (status === 'start') {
             periodStartDate = dateKey;
             localStorage.setItem(PERIOD_SETTINGS_KEY, JSON.stringify(periodSettings));
+            // 3. CRITICAL: Trigger prediction submission immediately after marking start
+            submitPredictions();
             alert("Period start date marked! Cycle predictions updated.");
             
         } else if (status === 'end') { 
@@ -468,22 +684,27 @@ function updateCounterAndSubmit(dateKey, status) {
         }
         
         // Update local counter data
+        // Update local counter data (period status)
         if (status === 'clear') {
-             // Clear the selected date
-            delete dailyCounters[dateKey];
+             delete dailyCounters[dateKey]; // Delete status
         } else {
-            // Set the selected date status ('start', 'end', or 'flow' if called from flow filler)
-            dailyCounters[dateKey] = status;
+            dailyCounters[dateKey] = status; // Set new status ('start', 'end', 'flow', etc.)
         }
+        // Get the existing count and combine for submission
+        const currentCount = dailyCounts[dateKey] || 0; // READ from dailyCounts
+        const currentStatus = dailyCounters[dateKey] || '';
+        valueToSubmit = `${currentCount}|${currentStatus}`; // Combine for submission
 
     } else {
         // --- Counter Mode Logic (Still relies on 'amount' being passed for +/-) ---
         let amount = status; // Revert status back to 'amount' for counter mode
-        let currentCount = dailyCounters[dateKey] || 0;
+        let currentCount = dailyCounts[dateKey] || 0;
         currentCount += amount;
         if (currentCount < 0) currentCount = 0;
-        dailyCounters[dateKey] = currentCount;
-        valueToSubmit = currentCount;
+        dailyCounts[dateKey] = currentCount; // WRITE to dailyCounts
+        // Combine value for submission: Count | Status
+        const currentStatus = dailyCounters[dateKey] || '';
+        valueToSubmit = `${currentCount}|${currentStatus}`;
     }
     
     renderCalendar(currentMonth, currentYear);
