@@ -3,7 +3,7 @@
 
 (Because keeping track of your insides shouldn't be boring!)
 
-Welcome to the repo for Poop & Flow Tracker, the Progressive Web App (PWA) that finally brings your two most essential bodily functions together in one place: your period calendar and your daily "presents" (aka poop). We're using the totally chill Google Forms API for data storage, so your precious intel is safe and sound, plus you can creep on your friends' anonymized data, because, you know, science!
+Welcome to the repo for Poop & Flow Tracker, the Progressive Web App (PWA) that finally brings your two most essential bodily functions together in one place: your period calendar and your daily "presents" (aka poop). I'm using the Google Forms and Sheets for data storage, plus you can creep on your friends' anonymized data, because, you know, science!
 
 ## TODO
 
@@ -21,14 +21,14 @@ Welcome to the repo for Poop & Flow Tracker, the Progressive Web App (PWA) that 
 * Pocket PWA Power: Install this bad boy on your phone, desktop, or even your smart fridge (if it runs a browser). It’s fast, works offline, and basically lives in your pocket.
 * Aunt Flo's Schedule: Log when the monthly visitor arrives and leaves. Keep that calendar looking crimson!
 * The Daily Dump: A delightful counter/tracker for your bathroom triumphs. Track how often and how, well, epic it was.
-* Google Forms: Our Secret Keeper: Forget complicated databases! We use the simple magic of Google Forms to submit your data directly to a hidden Google Sheet (it's low-key genius).
+* Google Forms: Our Secret Keeper: Forget complicated databases! We use the simple magic of Google Forms to submit your data directly to a hidden Google Sheet.
 * Snoop on Friends (Kindly!): See your buddies' general trends (anonymously, of course!). Finally, you can compare notes on… data points.
 
 ### Download on ur phone
 
 * Open website
-* Some phone will have a pop-up to install the web app. Ig you not one of them, try finding `Add to Home Screen` button on your browser.
-* Enjoy your shit
+* Some phones will have a pop-up to install the web app. If you not one of them, try finding `Add to Home Screen` button on your browser.
+* Enjoy shitting
 
 ## 🛠️ Usage
 

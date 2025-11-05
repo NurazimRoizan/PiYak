@@ -1,4 +1,4 @@
-const CACHE_NAME = 'piyak-cache-v1';
+const CACHE_NAME = 'piyak-cache-v2';
 const urlsToCache = [
     './', // Caches the root index.html
     './index.html',
