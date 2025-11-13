@@ -11,8 +11,8 @@ const PERIOD_SETTINGS_KEY = 'periodSettings';
 // --- NEW PERIOD SETTINGS ---
 // Default values will be loaded/overwritten by local storage
 let periodSettings = {
-    periodLength: 7, 
-    cycleLength: 28
+    periodLength: 13, 
+    cycleLength: 60,
 };
 let periodStartDate = null; // Last recorded start date
 
@@ -108,6 +108,7 @@ const todayWeekDay = document.getElementById('weekDay-display');
 const loginStatusText = document.getElementById('loginStatusText');
 const loginStatus = document.getElementById('loginStatus');
 const statusBar = document.getElementById('status-bar');
+const resetPeriodSettingsBtn = document.getElementById('resetPeriodSettingsBtn');
 // Format the date into a readable string (e.g., "Wednesday, November 5, 2025")
 // This method automatically handles locale formatting for a clean display.
 const formattedDate = today.toLocaleDateString('en-GB', {
@@ -209,25 +210,28 @@ function switchAppMode(newMode) {
 
     if (newMode === 'period') {
         currentModeDisplay.textContent = 'Period';
-        toggleModeBtn.textContent = 'Switch to Counter Tracker';
+        toggleModeBtn.textContent = 'Switch to Poopie Tracker';
         button1.textContent = 'Mark Start Date 🩸';
         button2.textContent = 'Mark End Date ✅';
         button3.textContent = 'Clear Marking 🗑️'; 
         button3.style.display = 'inline-block'; // Show the new button
         statusBar.style.display = 'block';
+        resetPeriodSettingsBtn.style.display = 'inline-block';
 
         // CRITICAL: Add class to calendar grid
         calendarContainer.classList.add('period-mode');
         // Ensure period settings are loaded before rendering
         loadPeriodSettings(); 
     } else {
-        currentModeDisplay.textContent = 'Counter';
+        currentModeDisplay.textContent = 'Poopie';
         toggleModeBtn.textContent = 'Switch to Period Tracker';
         button1.textContent = 'I Pooped!';
         button2.textContent = 'Just kidding I no poop';
         button3.style.display = 'none'; // Hide the period-specific button
         statusBar.style.display = 'none';
         // CRITICAL: Remove class from calendar grid
+        resetPeriodSettingsBtn.style.display = 'none';
+
         calendarContainer.classList.remove('period-mode');
     }
 
@@ -549,6 +553,23 @@ resetUserIdBtn.addEventListener('click', () => {
             calendarGrid.removeChild(calendarGrid.lastChild);
         }
         alert('User ID has been reset!');
+    }
+});
+
+resetPeriodSettingsBtn.addEventListener('click', () => {
+    if (confirm('Are you sure you want to reset the saved period settings?')) {
+        localStorage.removeItem(PERIOD_SETTINGS_KEY);
+        periodSetupModal.style.display = 'block';
+
+        alert('Period settings has been reset!');
+    }
+    if (currentAppMode === 'period') {
+        // 1. Load current settings into the modal inputs
+        periodLengthInput.value = periodSettings.periodLength;
+        cycleLengthInput.value = periodSettings.cycleLength;
+        
+        // 2. Show the setup modal (which uses the 'savePeriodSettingsBtn' to save)
+        periodSetupModal.style.display = 'block';
     }
 });
 

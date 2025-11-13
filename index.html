@@ -11,7 +11,7 @@
 <body>
     <div id="periodSetupModal" style="display:none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 20;">
         <div style="background: #2d2d30; padding: 25px; margin: 10% auto; width: 80%; max-width: 400px; border-radius: 8px;">
-            <h3 style="margin-top: 0; color: #8c9eff;">🩸 First-Time Period Setup</h3>
+            <h3 style="margin-top: 0; color: #8c9eff;">🩸 Period Cycle Setup</h3>
             
             <label for="periodLength" style="display: block; margin-top: 15px;">1. How long does your period usually last (days)?</label>
             <input type="number" id="periodLength" value="7" min="3" max="15" style="width: 95%; padding: 8px; margin-top: 5px; background: #3e3e3e; color: white; border: 1px solid #555;">
@@ -38,8 +38,11 @@
 
         <div style="text-align: center; margin: 10px 0; font-size: 0.9em;">
             Current Mode: <span id="currentModeDisplay" style="font-weight: bold; color: #8c9eff;">Beyak</span>
-            <button id="toggleModeBtn" style="margin-left: 15px; padding: 5px 10px; background-color: #3e3e3e; color: white; border: none; border-radius: 5px; cursor: pointer;">
+            <button id="toggleModeBtn" style="margin-left: 15px; padding: 5px 10px; background-color: #8c9eff; color: white; border: none; border-radius: 5px; cursor: pointer;">
                 Switch to Piyed Tracker
+            </button>
+            <button id="resetPeriodSettingsBtn" style="margin-left: 15px; padding: 5px 10px; background-color: #dc3545; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 0.9em; display: none;">
+                Update period settings
             </button>
         </div>
 
@@ -48,9 +51,9 @@
         </div>
         <div class="calendar-container">
             <div class="calendar-header">
-                <button id="prevMonthBtn">&lt;</button>
+                <button id="prevMonthBtn" style="background-color: #2d2d30;">&lt;</button>
                 <span id="monthYearDisplay"></span>
-                <button id="nextMonthBtn">&gt;</button>
+                <button id="nextMonthBtn" style="background-color: #2d2d30;">&gt;</button>
             </div>
             <div class="calendar-grid" id="calendarGrid">
                 <div class="day-name">Sun</div>
