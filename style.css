@@ -1,18 +1,20 @@
 /* Define Dark Mode Variables for easy adjustment */
 :root {
-    --bg-primary: #1e1e1e;
-    --bg-secondary: #2d2d30;
-    --text-color: #f0f0f0;
-    --highlight-color: #8c9eff;
-    --calendar-bg: #3c3c3e;
-    --grid-text-color: #ccc;
+    /* --- MIDNIGHT BLACK & CYAN THEME --- */
+    --bg-primary: #000000;      /* Pure Black (Body BG) */
+    --bg-secondary: #0A0A1F;    /* Very Dark Navy/Almost Black (Container/Card BG) */
+    --text-color: #E0FFFF;      /* Light Cyan/Azure (Main Text) */
+    --highlight-color: #00FFFF; /* Pure Cyan (Primary Highlight/Buttons/Borders) */
+    --calendar-bg: #101030;     /* Dark Navy (Calendar Box BG) */
+    --grid-text-color: #99FFFF; /* Muted Cyan (Day numbers) */
+    --dark-border-color: #1A1A50; /* Dark Blue Border for separation */
+    --selection-border: #FFD700;/* Gold border for selected day */
     
-    /* NEW: Counter Colors (Brown/Gold palette) */
-    --brown-base: #FFD700;   /* Lightest: Gold/Yellow (Count 1) */
+    /* Counter Colors (Brown/Gold palette - KEPT FOR FUNCTIONALITY) */
+    --brown-base: #FFD700;   
     --brown-mid1: #CC9900;
     --brown-mid2: #996600;
-    --brown-dark: #654321;   /* Darkest: Deep Brown (Count 4+) */
-    --selection-border: #f0f0ff; /* White border for selected day */
+    --brown-dark: #654321;
 }
 
 /* -----------------------
@@ -31,8 +33,9 @@ body {
     margin: 0 auto;
     padding: 10px;
     background-color: var(--bg-secondary);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 1.0);
     border-radius: 8px;
+    border: 1px solid var(--dark-border-color);
 }
 
 h1 {
@@ -45,18 +48,20 @@ h1 {
 ------------------------- */
 .buttons-group button {
     background-color: var(--highlight-color);
-    color: var(--bg-primary);
+    color: var(--bg-primary); 
     padding: 10px 20px;
     margin: 5px;
     border: none;
     border-radius: 5px;
     cursor: pointer;
     font-size: 16px;
-    transition: background-color 0.3s ease;
+    font-weight: bold;
+    transition: background-color 0.3s ease, transform 0.1s;
 }
 
 .buttons-group button:hover {
-    background-color: #6a85ff;
+    background-color: #00E0E0; 
+    transform: translateY(-1px);
 }
 
 /* -----------------------
@@ -64,7 +69,7 @@ h1 {
 ------------------------- */
 .calendar-container {
     margin: 20px auto;
-    border: 1px solid #555;
+    border: 1px solid var(--dark-border-color);
     border-radius: 4px;
     background-color: var(--calendar-bg);
     padding: 15px;
@@ -80,7 +85,12 @@ h1 {
 }
 
 .calendar-header button {
+    background-color: transparent !important;
     color: var(--highlight-color);
+    padding: 5px 10px;
+}
+.calendar-header button:hover {
+    color: var(--text-color);
 }
 
 .calendar-grid {
@@ -94,7 +104,7 @@ h1 {
     font-weight: bold;
     color: var(--grid-text-color);
     padding: 5px 0;
-    border-bottom: 1px solid #555;
+    border-bottom: 1px solid var(--dark-border-color);
 }
 
 .date-number {
@@ -104,58 +114,48 @@ h1 {
     transition: background-color 0.2s;
     color: var(--grid-text-color);
     position: relative;
+    background-color: #151540; 
 }
 
 .date-number:hover {
-    background-color: #444444;
+    background-color: #202050; 
 }
 
-/* New: Style for SELECTION */
 .selected-date {
-    outline: 2px solid var(--selection-border);
+    outline: 2px solid var(--highlight-color); 
     outline-offset: -2px;
 }
 
-/* Existing: Style for TODAY's date */
 .current-date {
-    /* background-color: var(--highlight-color); */
-    color: var(--grid-text-color);
-    /* color: var(--bg-primary); */
+    color: var(--text-color);
     font-weight: bold;
-    /* outline: none; 
-    outline-offset: 0; */
+    border: 1px solid var(--highlight-color); 
 }
 
+/* --- COUNTER COLOR INTENSITY LOGIC (BROWN/GOLD - KEPT) --- */
 
-/* --- NEW: COUNTER COLOR INTENSITY LOGIC (BROWN/GOLD) --- */
-
-/* Base style for any day with a counter > 0 */
 .date-number.has-counter {
     background-color: var(--brown-base); 
-    color: var(--bg-primary); /* Dark text on the light yellow/gold base */
+    color: var(--bg-primary);
     font-weight: bold;
 }
 
-/* Darker for Count 2 */
 .date-number.counter-2 {
     background-color: var(--brown-mid1);
 }
 
-/* Darker for Count 3 */
 .date-number.counter-3 {
     background-color: var(--brown-mid2);
-    color: white; /* Switch to white text for better contrast on darker backgrounds */
+    color: white; 
 }
 
-/* Darkest for Count 4 and above */
 .date-number.counter-4 {
     background-color: var(--brown-dark);
     color: white;
 }
 
-/* Style for days that aren't in the current month */
 .inactive {
-    color: #777;
+    color: #333333; 
     cursor: default;
     background-color: transparent !important;
     outline: none !important;
@@ -165,120 +165,153 @@ h1 {
     background-color: transparent;
 }
 
-/* --- NEW: Spinner Styles for Loading Overlay --- */
-
-/* The element that holds the spinning border */
-.spinner {
-    border: 4px solid rgba(255, 255, 255, 0.3); /* Light, transparent border */
-    border-top: 4px solid var(--highlight-color); /* The visible, spinning color */
-    border-radius: 50%; /* Makes it perfectly round */
-    width: 30px;
-    height: 30px;
-    animation: spin 1s linear infinite; /* Apply the animation */
-    margin-right: 15px; /* Space between spinner and text */
-}
-
-/* Define the spinning animation */
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
+/* ---------------------------------
+| NEW: COSMETIC PROGRESS BAR STYLES |
+--------------------------------- */
 
 .loading-overlay {
-    /* Positioning and Visibility */
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    display: flex; /* Starts as 'flex' but will be toggled by JS */
+    display: flex;
     justify-content: center;
     align-items: center;
-    z-index: 10; 
-    border-radius: 8px; /* Matches the container corner radius */
+    z-index: 100;
+    border-radius: 8px; 
     
-    /* Appearance */
-    background: rgba(45, 45, 48, 0.95); /* Semi-transparent dark background */
+    background: rgba(0, 0, 0, 0.98); 
     font-size: 1.5em; 
-    color: var(--text-color); 
+    color: var(--highlight-color); 
     font-weight: bold;
 }
 
-/* --- Period Tracking Mode Styles --- */
+.loader-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    max-width: 300px; 
+}
 
-/* Style for the container when in Period Mode (Optional: visually confirm mode switch) */
+.loader-graphic {
+    position: relative;
+    width: 100%;
+    height: 500px; 
+    
+    background-image: url('images/loader2.jpg'); 
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
+}
 
-/* .calendar-grid.period-mode { */
-    /* Example: Add a subtle border or glow specific to this mode if desired */
-    /* border: 1px solid #FF69B4; */
-/* } */
+/* The Progress Bar Container (#progressBarFill) */
+.progress-fill#progressBarFill {
+    position: absolute;
+    bottom: 92px; 
+    left: 70px; 
+    width: calc(100% - 140px); /* Full width of the visible track */
+    height: 50px; 
+    background-color: transparent; /* Rely on the track in the image */
+    border-radius: 25px;
+    overflow: hidden; /* CRITICAL: Clips the filling bar */
+}
 
-/* 1. Current Period (Recorded Start or Continuation) */
+/* The actual filling bar element (created using pseudo-element) */
+.progress-fill#progressBarFill::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%; /* The width of the full bar element */
+    height: 100%;
+    background-color: #4e2601; /* Color that matches the flow/brown bar */
+    border-radius: 25px;
+    
+    /* Apply the continuous, cosmetic animation */
+    animation: cosmetic-fill 2s linear infinite; 
+}
+
+@keyframes cosmetic-fill {
+    0% { transform: translateX(-100%); } /* Bar is completely outside left */
+    50% { transform: translateX(0%); } /* Bar fills completely */
+    100% { transform: translateX(100%); } /* Bar moves completely off the right, restarting loop */
+}
+
+/* -----------------------------------
+| PERIOD TRACKING MODE STYLES (KEPT) |
+----------------------------------- */
+
 .date-number.current_period {
-    background-color: #A05273 !important; /* Muted deep pink/maroon */
+    background-color: #A05273 !important; 
     color: white !important;
     font-weight: bold;
     border: 1px solid #C71585;
 }
 
-/* 1b. The Recorded Start Date */
 .date-number.period_start {
-    background-color: #C71585 !important; /* Brighter pink */
+    background-color: #C71585 !important; 
     color: white !important;
     border: 2px solid #FF69B4;
-    transform: scale(1.05); /* Make the start date stand out slightly */
+    transform: scale(1.05); 
 }
 
-/* 2. Predicted Period (The days predicted to be the next flow) */
 .date-number.predicted_period {
-    background-color: #614660; /* Darker, slightly translucent pink */
-    color: #FFC0CB; /* Light pink text */
-    border: 1px dashed #C71585; /* Dashed border for prediction */
+    background-color: #614660; 
+    color: #FFC0CB; 
+    border: 1px dashed #C71585; 
 }
 
-/* 3. Predicted Ovulation Day */
 .date-number.predicted_ovulation {
-    background-color: #FFD700; /* Gold */
-    color: #1e1e1e; /* Dark text for contrast */
+    background-color: #FFD700; 
+    color: var(--bg-primary); 
     font-weight: bold;
     border: 2px solid #FFA500;
 }
 
-/* 4. Fertile Window (Days leading up to ovulation) */
 .date-number.fertile_window {
-    background-color: #4CAF50; /* Green color, symbolizing fertility */
+    background-color: #4CAF50; 
     color: white;
     border: 1px solid #388E3C;
 }
 
-/* Override existing styles when in Period Mode */
 .date-number.period-mode:hover {
     cursor: pointer;
-    background-color: #555 !important;
+    background-color: #202050 !important;
 }
 
-/* Ensure selected date is visible regardless of mode */
 .date-number.selected-date {
-    /* Use a common highlight color */
-    box-shadow: 0 0 0 3px #8c9eff inset !important;
-    border-color: #8c9eff !important;
+    box-shadow: 0 0 0 3px var(--highlight-color) inset !important; 
+    border-color: var(--highlight-color) !important;
 }
 
-/* --- NEW: Period End and Flow Styles --- */
-
-/* Reusing the start color for the end date */
 .date-number.period_end {
-    /* Use the same background as the start date */
     background-color: #C71585 !important; 
     color: white !important;
     border: 2px solid #FF69B4;
     font-weight: bold;
 }
 
-/* Style for the days within the manually marked period flow */
 .date-number.period_flow {
-    /* Muted deep pink/maroon, similar to current_period, but distinct */
     background-color: #8C4769 !important; 
     color: white !important;
     border: 1px solid #C71585;
+}
+
+/* Modal Styling */
+#periodSetupModal > div {
+    background: var(--bg-secondary) !important;
+    border: 1px solid var(--dark-border-color);
+}
+#periodSetupModal h3 {
+    color: var(--highlight-color) !important;
+}
+#periodSetupModal input {
+    background: #151540 !important;
+    color: var(--text-color) !important;
+    border: 1px solid var(--dark-border-color) !important;
+}
+#savePeriodSettingsBtn {
+    background-color: #28a745 !important;
 }
