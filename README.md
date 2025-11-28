@@ -5,8 +5,6 @@
 
 Welcome to the repo for Poop & Flow Tracker, the Progressive Web App (PWA) that finally brings your two most essential bodily functions together in one place: your period calendar and your daily "presents" (aka poop). I'm using the simple magic of Google Forms and Sheets for data storage, plus you can creep on your friends' anonymized data, because, you know, science!
 
-![Preview](/images/pwa.jpg "App Widget")
-
 ## TODO
 
     - [X] Poop tracker
@@ -30,8 +28,11 @@ Welcome to the repo for Poop & Flow Tracker, the Progressive Web App (PWA) that 
 
 * Open website
 * Some phones will have a pop-up to install the web app. If you not one of them, try finding **`Add to Home Screen`** button on your browser.
-** ![IOS Fellow that can't find the Add to Home Screen](/images/iphone2.jpg "IOS Fellow")
-** ![Android Fellow](/images/android.jpg "Add to Home Screen")
+
+![IOS image](/images/iphone2.jpg "IOS image that can't find the Add to Home Screen")
+
+![Android image](/images/android.jpg "Add to Home Screen")
+
 * Enjoy shitting
 
 ## 🛠️ Usage

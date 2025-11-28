@@ -197,21 +197,21 @@ h1 {
 
 .loader-graphic {
     position: relative;
-    width: 100vh;
-    max-width: 500px; 
-    height: 100%; 
+    width: 100vw;  /* Viewport Width */
+    max-width: 500px;
+    height: 100vh;
     
     background-image: url('images/loader4.PNG'); 
     background-size: cover;
     background-repeat: no-repeat;
     background-position: center center;
+    background-attachment: fixed;
 }
 
 /* The Progress Bar Container (#progressBarFill) */
 .progress-fill#progressBarFill {
     position: absolute;
-    margin-bottom: 40%;
-    bottom: 92px; 
+    bottom: 40%; 
     left: 70px; 
     width: calc(100% - 140px); /* Full width of the visible track */
     height: 50px; 
