@@ -201,7 +201,7 @@ h1 {
     max-width: 500px;
     height: 100vh;
     
-    background-image: url('images/loader4.PNG'); 
+    background-image: url('images/loader.PNG'); 
     background-size: cover;
     background-repeat: no-repeat;
     background-position: center center;
@@ -211,7 +211,7 @@ h1 {
 /* The Progress Bar Container (#progressBarFill) */
 .progress-fill#progressBarFill {
     position: absolute;
-    bottom: 40%; 
+    bottom: 39%; 
     left: 70px; 
     width: calc(100% - 140px); /* Full width of the visible track */
     height: 50px; 
