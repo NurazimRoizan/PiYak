@@ -7,16 +7,19 @@ Welcome to the repo for Poop & Flow Tracker, the Progressive Web App (PWA) that 
 
 ## TODO
 
-    - [X] Poop tracker
-    - [X] Website up and running
-    - [X] PWA setup
-    - [X] Period tracker
-    - [X] Period prediction
-    - [X] Status top bar
-    - [ ] View friend daily widget
+- [X] Poop tracker
+- [X] Website up and running
+- [X] PWA setup
+- [X] Period tracker
+- [X] Period prediction
+- [X] Connect with partner
+- [ ] Status top bar (Poopie)
+- [ ] View friend daily widget
+- [ ] Remove partner
+- [ ] Fix login invisible link
 
 
-## The  Features
+## The Features
 
 * **Pocket PWA Power:** Install this bad boy on your phone, desktop, or even your smart fridge (if it runs a browser). It’s fast, works offline, and basically lives in your pocket.
 * **Aunt Flo's Schedule:** Log when the monthly visitor arrives and leaves. Keep that calendar looking crimson!

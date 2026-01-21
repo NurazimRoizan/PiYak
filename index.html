@@ -1,92 +1,132 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PiYak Calendar</title>
     <link rel="stylesheet" href="style.css">
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#1e1e1e"/>
+    <meta name="theme-color" content="#1e1e1e" />
 </head>
+
 <body>
-    <div id="periodSetupModal" style="display:none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 20;">
-        <div style="background: #2d2d30; padding: 25px; margin: 10% auto; width: 80%; max-width: 400px; border-radius: 8px;">
+    <div id="periodSetupModal"
+        style="display:none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 20;">
+        <div
+            style="background: #2d2d30; padding: 25px; margin: 10% auto; width: 80%; max-width: 400px; border-radius: 8px;">
             <h3 style="margin-top: 0; color: #8c9eff;">🩸 Period Cycle Setup</h3>
-            
-            <label for="periodLength" style="display: block; margin-top: 15px;">1. How long does your period usually last (days)?</label>
-            <input type="number" id="periodLength" value="7" min="3" max="15" style="width: 95%; padding: 8px; margin-top: 5px; background: #3e3e3e; color: white; border: 1px solid #555;">
-            
-            <label for="cycleLength" style="display: block; margin-top: 15px;">2. What is your usual cycle length (days)?</label>
-            <input type="number" id="cycleLength" value="28" min="20" max="45" style="width: 95%; padding: 8px; margin-top: 5px; background: #3e3e3e; color: white; border: 1px solid #555;">
-            
-            <button id="savePeriodSettingsBtn" style="width: 100%; padding: 10px; margin-top: 25px; background-color: #28a745; color: white; border: none; border-radius: 5px; cursor: pointer;">
+
+            <label for="periodLength" style="display: block; margin-top: 15px;">1. How long does your period usually
+                last (days)?</label>
+            <input type="number" id="periodLength" value="7" min="3" max="15"
+                style="width: 95%; padding: 8px; margin-top: 5px; background: #3e3e3e; color: white; border: 1px solid #555;">
+
+            <label for="cycleLength" style="display: block; margin-top: 15px;">2. What is your usual cycle length
+                (days)?</label>
+            <input type="number" id="cycleLength" value="28" min="20" max="45"
+                style="width: 95%; padding: 8px; margin-top: 5px; background: #3e3e3e; color: white; border: 1px solid #555;">
+
+            <button id="savePeriodSettingsBtn"
+                style="width: 100%; padding: 10px; margin-top: 25px; background-color: #28a745; color: white; border: none; border-radius: 5px; cursor: pointer;">
                 Save Settings and Start
             </button>
         </div>
     </div>
     <div class="container">
-        <p id="date-display" >Loading date...</p>
-        <h1 id="weekDay-display" >Loading day...</h1>
-        <div id="loginStatus"><p id="status-bar" >Ovulation in 11 Days</p></div>
+        <p id="date-display">Loading date...</p>
+        <h1 id="weekDay-display">Loading day...</h1>
+        <div id="loginStatus">
+            <p id="status-bar">Ovulation in 11 Days</p>
+        </div>
         <div id="userIdInputSection">
             <h2>👋 Welcome! Please Enter Your User ID:</h2>
-            <input type="text" id="userIdInput" placeholder="Enter your name or ID" style="padding: 10px; margin-bottom: 15px; width: 80%;">
-            <button id="saveUserIdBtn" style="background-color: #28a745; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer;">Start Tracking</button>
+            <input type="text" id="userIdInput" placeholder="Enter your name or ID"
+                style="padding: 10px; margin-bottom: 15px; width: 80%;">
+            <button id="saveUserIdBtn"
+                style="background-color: #28a745; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer;">Start
+                Tracking</button>
             <hr style="margin-top: 20px;">
         </div>
         <div class="calendar-container">
 
-        <div style="text-align: center; margin: 10px 0; font-size: 0.9em;">
-            Current Mode: <span id="currentModeDisplay" style="font-weight: bold; color: #8c9eff;">Beyak</span>
-            <button id="toggleModeBtn" style="margin-left: 15px; padding: 5px 10px; background-color: #8c9eff; color: white; border: none; border-radius: 5px; cursor: pointer;">
-                Switch to Piyed Tracker
-            </button>
-            <button id="resetPeriodSettingsBtn" style="margin-left: 15px; padding: 5px 10px; background-color: #dc3545; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 0.9em; display: none;">
-                Update period settings
-            </button>
-        </div>
+            <div style="text-align: center; margin: 10px 0; font-size: 0.9em;">
+                Current Mode: <span id="currentModeDisplay" style="font-weight: bold; color: #8c9eff;">Beyak</span>
+                <button id="toggleModeBtn"
+                    style="margin-left: 15px; padding: 5px 10px; background-color: #8c9eff; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                    Switch to Piyed Tracker
+                </button>
+                <button id="resetPeriodSettingsBtn"
+                    style="margin-left: 15px; padding: 5px 10px; background-color: #dc3545; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 0.9em; display: none;">
+                    Update period settings
+                </button>
+            </div>
 
-        <div id="loadingOverlay" class="loading-overlay" style="display: none;">
-            <!-- <div class="loader-content"> -->
+            <div id="loadingOverlay" class="loading-overlay" style="display: none;">
+                <!-- <div class="loader-content"> -->
                 <div class="loader-graphic">
                     <div id="progressBarFill" class="progress-fill"></div>
                 </div>
-                
-            <!-- </div> -->
-        </div>
-        <div class="calendar-container">
-            <div class="calendar-header">
-                <button id="prevMonthBtn" style="background-color: #2d2d30;">&lt;</button>
-                <span id="monthYearDisplay"></span>
-                <button id="nextMonthBtn" style="background-color: #2d2d30;">&gt;</button>
+
+                <!-- </div> -->
             </div>
-            <div class="calendar-grid" id="calendarGrid">
-                <div class="day-name">Sun</div>
-                <div class="day-name">Mon</div>
-                <div class="day-name">Tue</div>
-                <div class="day-name">Wed</div>
-                <div class="day-name">Thu</div>
-                <div class="day-name">Fri</div>
-                <div class="day-name">Sat</div>
+            <div class="calendar-container">
+                <div class="calendar-header">
+                    <button id="prevMonthBtn" style="background-color: #2d2d30;">&lt;</button>
+                    <span id="monthYearDisplay"></span>
+                    <button id="nextMonthBtn" style="background-color: #2d2d30;">&gt;</button>
                 </div>
-        </div>
+                <div class="calendar-grid" id="calendarGrid">
+                    <div class="day-name">Sun</div>
+                    <div class="day-name">Mon</div>
+                    <div class="day-name">Tue</div>
+                    <div class="day-name">Wed</div>
+                    <div class="day-name">Thu</div>
+                    <div class="day-name">Fri</div>
+                    <div class="day-name">Sat</div>
+                </div>
+            </div>
 
-        <div class="buttons-group">
-            <button id="button1">I Pooped!</button>
-            <button id="button2">Just kidding I no poop</button>
-            <button id="button3" style="display: none; background-color: #6c757d; color: white;">Clear Marking</button>
-        </div>
+            <div class="buttons-group">
+                <button id="button1">I Pooped!</button>
+                <button id="button2">Just kidding I no poop</button>
+                <button id="button3" style="display: none; background-color: #6c757d; color: white;">Clear
+                    Marking</button>
+            </div>
 
-        <div style="margin-top: 20px;">
-        <button id="resetUserIdBtn" style="background-color: #dc3545; color: white; padding: 5px 15px; border: none; border-radius: 5px; cursor: pointer; font-size: 0.9em;">
-            Reset User ID
-        </button>
+            <div style="margin-top: 20px;">
+                <button id="resetUserIdBtn"
+                    style="background-color: #dc3545; color: white; padding: 5px 15px; border: none; border-radius: 5px; cursor: pointer; font-size: 0.9em;">
+                    Reset User ID
+                </button>
+            </div>
         </div>
+        <div id="partnerSetupModal"
+            style="display:none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 25;">
+            <div
+                style="background: #2d2d30; padding: 25px; margin: 20% auto; width: 80%; max-width: 400px; border-radius: 8px;">
+                <h3 style="margin-top: 0; color: #8c9eff;">❤️ Connect with Partner</h3>
+                <p style="color: #ccc; font-size: 0.9em;">Enter your partner's User ID to view their calendar:</p>
+                <input type="text" id="partnerIdInput" placeholder="Partner ID"
+                    style="width: 95%; padding: 10px; margin-top: 10px; background: #3e3e3e; color: white; border: 1px solid #555;">
+                <div style="margin-top: 20px; text-align: right;">
+                    <button id="cancelPartnerSetupBtn"
+                        style="padding: 8px 15px; background-color: #6c757d; color: white; border: none; border-radius: 5px; cursor: pointer; margin-right: 10px;">Cancel</button>
+                    <button id="savePartnerIdBtn"
+                        style="padding: 8px 15px; background-color: #28a745; color: white; border: none; border-radius: 5px; cursor: pointer;">Connect</button>
+                </div>
+            </div>
         </div>
-        <div id="loginStatus" style="text-align: right;"><p id="loginStatusText">Not Logged-In</p></div>
+        <div id="userSessionContainer"
+            style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px; font-size: 0.9em;">
+            <span id="loginStatusText">Not Logged-In</span>
+            <a href="#" id="partnerLink" style="color: #8c9eff; text-decoration: underline; display: none;">Connect with
+                a Partner</a>
+        </div>
     </div>
 
     <script src="script.js"></script>
 
 </body>
+
 </html>
