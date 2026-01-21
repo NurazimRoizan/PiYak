@@ -117,6 +117,7 @@ const partnerSetupModal = document.getElementById('partnerSetupModal');
 const partnerIdInput = document.getElementById('partnerIdInput');
 const savePartnerIdBtn = document.getElementById('savePartnerIdBtn');
 const cancelPartnerSetupBtn = document.getElementById('cancelPartnerSetupBtn');
+const changePartnerBtn = document.getElementById('changePartnerBtn');
 // Format the date into a readable string (e.g., "Wednesday, November 5, 2025")
 // This method automatically handles locale formatting for a clean display.
 const formattedDate = today.toLocaleDateString('en-GB', {
@@ -664,7 +665,14 @@ partnerLink.addEventListener('click', async (e) => {
         // Re-enable controls
         document.querySelector('.buttons-group').style.display = 'block';
         toggleModeBtn.style.display = 'inline-block';
+        // Re-enable controls
+        document.querySelector('.buttons-group').style.display = 'block';
+        toggleModeBtn.style.display = 'inline-block';
         if (resetPeriodSettingsBtn) resetPeriodSettingsBtn.style.display = (currentAppMode === 'period') ? 'inline-block' : 'none';
+
+        // --- NEW: Reset Button Toggle ---
+        resetUserIdBtn.style.display = 'inline-block';
+        if (changePartnerBtn) changePartnerBtn.style.display = 'none'; // Hide Change Partner
 
     } else {
         // Switch to Partner View
@@ -679,6 +687,10 @@ partnerLink.addEventListener('click', async (e) => {
         document.querySelector('.buttons-group').style.display = 'none';
         toggleModeBtn.style.display = 'none';
         resetPeriodSettingsBtn.style.display = 'none';
+
+        // --- NEW: Reset Button Toggle ---
+        resetUserIdBtn.style.display = 'none';
+        if (changePartnerBtn) changePartnerBtn.style.display = 'inline-block'; // Show Change Partner
 
         // Fetch Partner Data
         loadingOverlay.style.display = 'flex';
@@ -705,14 +717,14 @@ savePartnerIdBtn.addEventListener('click', () => {
     const pId = partnerIdInput.value.trim();
     if (pId) {
         if (pId === DEFAULT_USER_ID) {
-            alert("You cannot add yourself as a partner.");
+            alert("You cannot add yourself as a partner. That's sad!");
             return;
         }
         PARTNER_ID = pId;
         localStorage.setItem(PARTNER_ID_STORAGE_KEY, PARTNER_ID);
         partnerSetupModal.style.display = 'none';
         partnerLink.textContent = "View Partner's Calendar";
-        alert(`Partner ${PARTNER_ID} connected!`);
+        alert(`Partner ${PARTNER_ID} connected! Enjoy spying on each others.`);
     } else {
         alert("Please enter a valid Partner ID.");
     }
@@ -722,6 +734,17 @@ cancelPartnerSetupBtn.addEventListener('click', () => {
     partnerSetupModal.style.display = 'none';
     partnerIdInput.value = '';
 });
+
+// Change Partner Button Handler
+if (changePartnerBtn) {
+    changePartnerBtn.addEventListener('click', () => {
+        // Option 1: Just open modal to overwrite
+        partnerSetupModal.style.display = 'block';
+
+        // Option 2 (Optional): Pre-fill with current partner? 
+        // partnerIdInput.value = PARTNER_ID || '';
+    });
+}
 
 
 // --- CORE FUNCTIONS (Unchanged from previous logic) ---

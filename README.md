@@ -13,9 +13,10 @@ Welcome to the repo for Poop & Flow Tracker, the Progressive Web App (PWA) that 
 - [X] Period tracker
 - [X] Period prediction
 - [X] Connect with partner
-- [ ] Status top bar (Poopie)
-- [ ] View friend daily widget
-- [ ] Remove partner
+- [X] Status top bar (Poopie)
+- [ ] Add daily widget on homescreen
+- [ ] View partner's daily widget
+- [X] Remove partner
 - [ ] Fix login invisible link
 
 
