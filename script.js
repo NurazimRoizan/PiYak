@@ -236,7 +236,8 @@ function switchAppMode(newMode) {
         button1.textContent = 'I Pooped!';
         button2.textContent = 'Just kidding I no poop';
         button3.style.display = 'none'; // Hide the period-specific button
-        statusBar.style.display = 'none';
+        statusBar.style.display = 'block';
+        updatePoopStatus(); // Initialize correct message
         // CRITICAL: Remove class from calendar grid
         resetPeriodSettingsBtn.style.display = 'none';
 
@@ -397,6 +398,50 @@ function calculateNextOvulation() {
     // If both ovulation and period start are mathematically in the past,
     // it means the user has not marked their latest period.
     statusBar.textContent = `⚠️ You should have your period now. Please mark the Start Date.`;
+}
+
+// --- NEW FUNCTION: Calculate Poop Streak ---
+function calculatePoopStreak() {
+    let currentStreak = 0;
+    // Start checking from TODAY backwards
+    let checkDate = new Date(today); // Use safe copy of today
+    checkDate.setHours(0, 0, 0, 0);
+
+    // Loop backwards to find consecutive days with counts > 0
+    while (true) {
+        const dateKey = `${checkDate.getFullYear()}-${String(checkDate.getMonth() + 1).padStart(2, '0')}-${String(checkDate.getDate()).padStart(2, '0')}`;
+
+        if ((dailyCounts[dateKey] || 0) > 0) {
+            currentStreak++;
+            checkDate.setDate(checkDate.getDate() - 1); // Go to previous day
+        } else {
+            break; // Break streak if a day is missed
+        }
+    }
+    return currentStreak;
+}
+
+// --- NEW FUNCTION: Update Poop Status Bar ---
+function updatePoopStatus() {
+    if (isPartnerView) {
+        statusBar.textContent = "Viewing Partner's Calendar (Read Only)";
+        return;
+    }
+
+    // Safety check just in case called in wrong mode, though logic handles display
+    if (currentAppMode !== 'counter') return;
+
+    const todayKey = getDateKey(today.getFullYear(), today.getMonth(), today.getDate());
+    const countToday = dailyCounts[todayKey] || 0;
+    const streak = calculatePoopStreak();
+
+    if (streak > 2) {
+        statusBar.textContent = `You are on the roll !! ${streak} days streak !!`;
+    } else if (countToday >= 1) {
+        statusBar.textContent = "Bowel movement doing great today !";
+    } else {
+        statusBar.textContent = "Poopie time !!";
+    }
 }
 
 // --- CORRECTED FUNCTION: Log Predictions for ONLY the Current Cycle ---
@@ -769,7 +814,11 @@ function renderCalendar(month, year) {
         });
         calendarGrid.appendChild(dateDiv);
     }
-    calculateNextOvulation();
+    if (currentAppMode === 'period') {
+        calculateNextOvulation();
+    } else {
+        updatePoopStatus(); // Update poop status on render
+    }
 }
 
 function getDateKey(year, month, day) {
@@ -828,9 +877,13 @@ function updateCounterAndSubmit(dateKey, status) {
         currentCount += amount;
         if (currentCount < 0) currentCount = 0;
         dailyCounts[dateKey] = currentCount; // WRITE to dailyCounts
-        // Combine value for submission: Count | Status
         const currentStatus = dailyCounters[dateKey] || '';
         valueToSubmit = `${currentCount}|${currentStatus}`;
+
+        // Immediate UI Update for Status Bar
+        if (dateKey === getDateKey(today.getFullYear(), today.getMonth(), today.getDate())) {
+            // We need to update this slightly differently or just re-render which happens below
+        }
     }
 
     renderCalendar(currentMonth, currentYear);
