@@ -1,0 +1,52 @@
+@import "tailwindcss";
+
+@theme inline {
+  --color-piyak-bg: #111111;
+  --color-piyak-card: #000000;
+  --color-piyak-text: #FFFFFF;
+  --color-piyak-highlight: #00FFFF;
+  --color-piyak-calendar: #000000;
+  --color-piyak-grid-text: #E0E0E0;
+  --color-piyak-border: #FFFFFF;
+  --color-piyak-selection: #FFFF00;
+  
+  --color-piyak-brown-base: #FFD700;
+  --color-piyak-brown-mid1: #FF8C00;
+  --color-piyak-brown-mid2: #D2691E;
+  --color-piyak-brown-dark: #8B4513;
+
+  --color-period-current: #FF00FF;
+  --color-period-start: #FF00FF;
+  --color-period-start-border: #FFFFFF;
+  --color-period-predicted: #330033;
+  --color-period-predicted-text: #FF66FF;
+  --color-period-ovulation: #FFFF00;
+  --color-period-ovulation-border: #FFFFFF;
+  --color-period-fertile: #00FF00;
+  --color-period-fertile-border: #FFFFFF;
+  --color-period-end: #FF00FF;
+  --color-period-flow: #CC00CC;
+}
+
+body {
+  background-color: var(--color-piyak-bg);
+  color: var(--color-piyak-text);
+  font-family: var(--font-space-grotesk), sans-serif;
+}
+
+@keyframes slide-poop {
+  from { background-position: 0 0; }
+  to { background-position: 28.28px 0; }
+}
+
+.poop-bar-animated {
+  background-image: repeating-linear-gradient(
+    -45deg,
+    #3b1c00 0px,
+    #3b1c00 10px,
+    #5c2c00 10px,
+    #5c2c00 20px
+  );
+  background-size: 28.28px 28.28px;
+  animation: slide-poop 0.6s linear infinite;
+}
