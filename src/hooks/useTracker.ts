@@ -39,30 +39,65 @@ export function useTracker() {
         setIsLoading(false);
     }, []);
 
-    const fetchDailyData = useCallback(async (uid: string) => {
+    const GOOGLE_APP_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyK9fqXn-Mhw9u7FwI4PA4A3qj5t6D9qjVo07PZw1GD5FL47cyFyljhXFoWys9QNrVD1w/exec';
+
+    const fetchDailyData = useCallback((uid: string) => {
         setIsLoading(true);
-        try {
-            const res = await fetch(`/api/data?userID=${encodeURIComponent(uid)}`);
-            if (!res.ok) throw new Error('Failed to fetch');
-            const data: DailyData = await res.json();
+        
+        const callbackName = 'jsonp_cb_' + Math.round(100000 * Math.random());
+        const script = document.createElement('script');
+        
+        const cleanup = () => {
+            if (script.parentNode) script.parentNode.removeChild(script);
+            delete (window as any)[callbackName];
+            setIsLoading(false);
+        };
+        
+        (window as any)[callbackName] = (rawData: any) => {
+            cleanup();
             
-            setDailyCounts(data.counts || {});
-            setDailyStatuses(data.statuses || {});
-            
-            // Calculate period start date from statuses
-            if (data.statuses) {
-                const dates = Object.keys(data.statuses).filter(key => data.statuses[key] === 'start').sort();
-                if (dates.length > 0) {
-                    setPeriodStartDate(dates[dates.length - 1]);
+            // Parse data as we did in the API route
+            const parsedCounters: Record<string, number> = {};
+            const parsedStatuses: Record<string, string> = {};
+
+            if (rawData && rawData.dailyCounters) {
+                for (const [dateKey, combinedValue] of Object.entries(rawData.dailyCounters)) {
+                    if (typeof combinedValue === 'string' && combinedValue.includes('|')) {
+                        const parts = combinedValue.split('|');
+                        const countPart = parts[0].trim();
+                        const statusPart = parts[1].trim();
+
+                        parsedCounters[dateKey] = countPart ? parseInt(countPart) : 0;
+                        if (statusPart) {
+                            parsedStatuses[dateKey] = statusPart;
+                        }
+                    } else if (!isNaN(Number(combinedValue))) {
+                        parsedCounters[dateKey] = parseInt(String(combinedValue));
+                    } else if (typeof combinedValue === 'string') {
+                        parsedStatuses[dateKey] = combinedValue;
+                    }
                 }
             }
-        } catch (error) {
-            console.error('Error fetching data:', error);
+            
+            setDailyCounts(parsedCounters);
+            setDailyStatuses(parsedStatuses);
+            
+            // Calculate period start date from statuses
+            const dates = Object.keys(parsedStatuses).filter(key => parsedStatuses[key] === 'start').sort();
+            if (dates.length > 0) {
+                setPeriodStartDate(dates[dates.length - 1]);
+            }
+        };
+        
+        script.onerror = () => {
+            cleanup();
+            console.error('JSONP Request Failed');
             setDailyCounts({});
             setDailyStatuses({});
-        } finally {
-            setIsLoading(false);
-        }
+        };
+        
+        script.src = `${GOOGLE_APP_SCRIPT_URL}?userID=${encodeURIComponent(uid)}&callback=${callbackName}`;
+        document.body.appendChild(script);
     }, []);
 
     // Fetch data when userId or partner view changes
@@ -81,14 +116,19 @@ export function useTracker() {
         if (!activeUserId) return;
 
         try {
-            await fetch('/api/data', {
+            const formData = new URLSearchParams();
+            formData.append('userID', activeUserId);
+            formData.append('date', dateKey);
+            formData.append('counterValue', valueToSubmit);
+
+            // Use no-cors mode for Google Apps Script to avoid CORS errors on POST
+            await fetch(GOOGLE_APP_SCRIPT_URL, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    userID: activeUserId,
-                    date: dateKey,
-                    counterValue: valueToSubmit
-                })
+                mode: 'no-cors',
+                body: formData,
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                }
             });
         } catch (error) {
             console.error('Submission failed:', error);

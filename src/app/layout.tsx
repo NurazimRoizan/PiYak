@@ -27,7 +27,7 @@ export default function RootLayout({
       className={`${spaceGrotesk.variable} h-full antialiased`}
     >
       <head>
-        <link rel="manifest" href="/manifest.json" />
+        <link rel="manifest" href="/PiYak/manifest.json" />
       </head>
       <body className="min-h-full flex flex-col">{children}</body>
     </html>

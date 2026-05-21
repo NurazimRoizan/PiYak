@@ -63,7 +63,7 @@ export default function Home() {
             <div className="fixed inset-0 bg-black z-[100] flex justify-center items-center">
                 <div className="relative w-full max-w-[500px] aspect-[9/16] max-h-screen">
                     <img 
-                        src="/images/loader.PNG" 
+                        src="/PiYak/images/loader.PNG" 
                         alt="Loading PiYak..." 
                         className="absolute inset-0 w-full h-full object-cover object-center" 
                     />
