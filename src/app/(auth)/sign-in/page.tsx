@@ -5,8 +5,7 @@ export default function Page() {
     <div className="flex min-h-screen items-center justify-center bg-black p-4">
       <div className="border-4 border-white shadow-[12px_12px_0_0_#FF00FF] bg-white p-4 max-w-md w-full flex justify-center">
         <SignIn 
-            routing="path"
-            path="/sign-in"
+            routing="hash"
             signUpUrl="/sign-up"
             fallbackRedirectUrl="/"
             appearance={{
