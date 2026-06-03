@@ -67,27 +67,27 @@ export default function PartnerSetupModal({ isOpen, inviteCode, onSave, onCancel
                     className="w-full p-3 mb-6 bg-black text-white border-4 border-white font-mono font-bold uppercase tracking-widest text-center placeholder:text-gray-500 placeholder:tracking-normal focus:outline-none focus:ring-4 focus:ring-piyak-highlight"
                 />
                 
-                <div className="flex justify-between gap-4">
+                <div className="flex flex-col-reverse sm:flex-row justify-between items-center gap-6 mt-4">
                     {/* Disconnect Button (only show if already connected) */}
                     <button 
                         onClick={onDisconnect}
-                        className="px-6 py-3 text-gray-400 font-extrabold uppercase underline hover:text-white transition-colors"
+                        className="text-gray-400 font-extrabold uppercase underline hover:text-white transition-colors text-sm tracking-wide"
                     >
                         Disconnect
                     </button>
                     
-                    <div className="flex gap-4">
+                    <div className="flex w-full sm:w-auto justify-between sm:justify-end gap-3">
                         <button 
                             onClick={onCancel}
                             disabled={isConnecting}
-                            className="px-6 py-3 bg-white text-black border-4 border-black font-extrabold uppercase hover:bg-gray-300 transition-colors disabled:opacity-50"
+                            className="flex-1 sm:flex-none px-4 py-3 bg-white text-black border-4 border-black font-extrabold uppercase hover:bg-gray-300 transition-colors disabled:opacity-50 text-sm"
                         >
                             Cancel
                         </button>
                         <button 
                             onClick={handleSave}
                             disabled={isConnecting}
-                            className="px-6 py-3 bg-piyak-highlight text-black border-4 border-black shadow-[4px_4px_0_0_#fff] hover:-translate-y-1 hover:shadow-[6px_6px_0_0_#fff] active:translate-x-1 active:translate-y-1 active:shadow-none font-extrabold uppercase transition-all disabled:opacity-50 disabled:shadow-none disabled:translate-y-0"
+                            className="flex-1 sm:flex-none px-4 py-3 bg-piyak-highlight text-black border-4 border-black shadow-[4px_4px_0_0_#fff] hover:-translate-y-1 hover:shadow-[6px_6px_0_0_#fff] active:translate-x-1 active:translate-y-1 active:shadow-none font-extrabold uppercase transition-all disabled:opacity-50 disabled:shadow-none disabled:translate-y-0 text-sm"
                         >
                             {isConnecting ? '...' : 'Connect'}
                         </button>
