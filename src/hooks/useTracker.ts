@@ -1,15 +1,15 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useAuth } from '@clerk/nextjs';
 import { AppMode, PeriodSettings, DailyData, PeriodStatus } from '../utils/types';
 import { getDateKey } from '../utils/dateUtils';
 import { getPeriodStatus } from '../utils/periodLogic';
 
-const USER_ID_STORAGE_KEY = 'calendarUserId';
 const MODE_STORAGE_KEY = 'appMode';
 const PERIOD_SETTINGS_KEY = 'periodSettings';
 const PARTNER_ID_STORAGE_KEY = 'partnerUserId';
 
 export function useTracker() {
-    const [userId, setUserId] = useState<string | null>(null);
+    const { userId } = useAuth();
     const [partnerId, setPartnerId] = useState<string | null>(null);
     const [appMode, setAppMode] = useState<AppMode>('counter');
     const [periodSettings, setPeriodSettings] = useState<PeriodSettings>({ periodLength: 7, cycleLength: 28 });
@@ -23,12 +23,10 @@ export function useTracker() {
 
     // Initial load from local storage
     useEffect(() => {
-        const savedUserId = localStorage.getItem(USER_ID_STORAGE_KEY);
         const savedPartnerId = localStorage.getItem(PARTNER_ID_STORAGE_KEY);
         const savedMode = (localStorage.getItem(MODE_STORAGE_KEY) as AppMode) || 'counter';
         const savedSettings = localStorage.getItem(PERIOD_SETTINGS_KEY);
 
-        if (savedUserId) setUserId(savedUserId);
         if (savedPartnerId) setPartnerId(savedPartnerId);
         setAppMode(savedMode);
         
@@ -39,116 +37,88 @@ export function useTracker() {
         setIsLoading(false);
     }, []);
 
-    const GOOGLE_APP_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyK9fqXn-Mhw9u7FwI4PA4A3qj5t6D9qjVo07PZw1GD5FL47cyFyljhXFoWys9QNrVD1w/exec';
-
-    const fetchDailyData = useCallback((uid: string) => {
+    const fetchDailyData = useCallback(async (activePartnerId?: string) => {
+        if (!userId) return;
         setIsLoading(true);
         
-        const callbackName = 'jsonp_cb_' + Math.round(100000 * Math.random());
-        const script = document.createElement('script');
-        
-        const cleanup = () => {
-            if (script.parentNode) script.parentNode.removeChild(script);
-            delete (window as any)[callbackName];
-            setIsLoading(false);
-        };
-        
-        (window as any)[callbackName] = (rawData: any) => {
-            cleanup();
-            
-            // Parse data as we did in the API route
-            const parsedCounters: Record<string, number> = {};
-            const parsedStatuses: Record<string, string> = {};
-
-            if (rawData && rawData.dailyCounters) {
-                for (const [dateKey, combinedValue] of Object.entries(rawData.dailyCounters)) {
-                    if (typeof combinedValue === 'string' && combinedValue.includes('|')) {
-                        const parts = combinedValue.split('|');
-                        const countPart = parts[0].trim();
-                        const statusPart = parts[1].trim();
-
-                        parsedCounters[dateKey] = countPart ? parseInt(countPart) : 0;
-                        if (statusPart) {
-                            parsedStatuses[dateKey] = statusPart;
-                        }
-                    } else if (!isNaN(Number(combinedValue))) {
-                        parsedCounters[dateKey] = parseInt(String(combinedValue));
-                    } else if (typeof combinedValue === 'string') {
-                        parsedStatuses[dateKey] = combinedValue;
-                    }
-                }
+        try {
+            let url = '/api/tracker';
+            if (activePartnerId) {
+                url += `?partnerId=${activePartnerId}`;
             }
+
+            const res = await fetch(url);
+            if (!res.ok) throw new Error('Failed to fetch data');
+
+            const data = await res.json();
             
-            setDailyCounts(parsedCounters);
-            setDailyStatuses(parsedStatuses);
+            setDailyCounts(data.counts || {});
+            setDailyStatuses(data.statuses || {});
             
             // Calculate period start date from statuses
-            const dates = Object.keys(parsedStatuses).filter(key => parsedStatuses[key] === 'start').sort();
-            if (dates.length > 0) {
-                setPeriodStartDate(dates[dates.length - 1]);
+            if (data.statuses) {
+                const dates = Object.keys(data.statuses).filter(key => data.statuses[key] === 'start').sort();
+                if (dates.length > 0) {
+                    setPeriodStartDate(dates[dates.length - 1]);
+                }
             }
-        };
-        
-        script.onerror = () => {
-            cleanup();
-            console.error('JSONP Request Failed');
+        } catch (error) {
+            console.error('Error fetching data:', error);
             setDailyCounts({});
             setDailyStatuses({});
-        };
-        
-        script.src = `${GOOGLE_APP_SCRIPT_URL}?userID=${encodeURIComponent(uid)}&callback=${callbackName}`;
-        document.body.appendChild(script);
-    }, []);
+        } finally {
+            setIsLoading(false);
+        }
+    }, [userId]);
 
     // Fetch data when userId or partner view changes
     useEffect(() => {
-        const activeUserId = isPartnerView ? partnerId : userId;
-        if (activeUserId) {
-            fetchDailyData(activeUserId);
+        if (userId) {
+            const activePartnerId = isPartnerView && partnerId ? partnerId : undefined;
+            fetchDailyData(activePartnerId);
         } else {
             setDailyCounts({});
             setDailyStatuses({});
         }
     }, [userId, partnerId, isPartnerView, fetchDailyData]);
 
-    const submitData = async (dateKey: string, valueToSubmit: string) => {
-        const activeUserId = isPartnerView ? partnerId : userId;
-        if (!activeUserId) return;
+    const submitData = async (dateKey: string, count: number, status: string | null) => {
+        if (!userId) return;
 
         try {
-            const formData = new URLSearchParams();
-            formData.append('userID', activeUserId);
-            formData.append('date', dateKey);
-            formData.append('counterValue', valueToSubmit);
+            const body: any = { date: dateKey, count, status };
+            if (isPartnerView && partnerId) {
+                body.partnerId = partnerId;
+            }
 
-            // Use no-cors mode for Google Apps Script to avoid CORS errors on POST
-            await fetch(GOOGLE_APP_SCRIPT_URL, {
+            await fetch('/api/tracker', {
                 method: 'POST',
-                mode: 'no-cors',
-                body: formData,
                 headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded'
-                }
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(body)
             });
         } catch (error) {
             console.error('Submission failed:', error);
         }
     };
 
-    const updateCounterAndSubmit = async (dateKey: string, status: string | number) => {
-        if (!userId || isPartnerView) return;
+    const toggleStatus = async (dateKey: string, status: any) => {
+        if (isPartnerView) return; // Partners cannot edit
+        if (!userId) return;
 
-        let newCounts = { ...dailyCounts };
-        let newStatuses = { ...dailyStatuses };
-        let valueToSubmit = String(status);
+        const newCounts = { ...dailyCounts };
+        const newStatuses = { ...dailyStatuses };
+        
+        let countToSubmit = newCounts[dateKey] || 0;
+        let statusToSubmit: string | null = null;
 
         if (appMode === 'period') {
-            const periodStat = status as PeriodStatus;
-            
-            if (periodStat === 'start') {
+            if (status === 'start') {
                 setPeriodStartDate(dateKey);
-            } else if (periodStat === 'end') {
-                if (!periodStartDate || dateKey <= periodStartDate) {
+            }
+            if (status === 'end') {
+                if (!periodStartDate || new Date(dateKey) < new Date(periodStartDate)) {
                     alert("Please mark a 'Start Date' on an earlier day before marking the end.");
                     return;
                 }
@@ -164,30 +134,29 @@ export function useTracker() {
                     
                     const count = newCounts[dKey] || 0;
                     if (dKey !== dateKey) { // we will submit the dateKey separately below
-                        submitData(dKey, `${count}|${tempStatus}`);
+                        submitData(dKey, count, tempStatus);
                     }
                 }
             }
             
             if (status === 'clear') {
                 delete newStatuses[dateKey];
-                valueToSubmit = `${newCounts[dateKey] || 0}|`;
+                statusToSubmit = 'clear';
             } else {
                 newStatuses[dateKey] = String(status);
-                valueToSubmit = `${newCounts[dateKey] || 0}|${status}`;
+                statusToSubmit = String(status);
             }
         } else {
             const amount = typeof status === 'number' ? status : parseInt(status);
-            let currentCount = newCounts[dateKey] || 0;
-            currentCount += amount;
-            if (currentCount < 0) currentCount = 0;
-            newCounts[dateKey] = currentCount;
-            valueToSubmit = `${currentCount}|${newStatuses[dateKey] || ''}`;
+            countToSubmit += amount;
+            if (countToSubmit < 0) countToSubmit = 0;
+            newCounts[dateKey] = countToSubmit;
+            statusToSubmit = newStatuses[dateKey] || null;
         }
 
         setDailyCounts(newCounts);
         setDailyStatuses(newStatuses);
-        await submitData(dateKey, valueToSubmit);
+        await submitData(dateKey, countToSubmit, statusToSubmit);
 
         // Update predictions if period mode start
         if (appMode === 'period' && status === 'start') {
@@ -215,24 +184,12 @@ export function useTracker() {
                 if (!['start', 'end', 'flow'].includes(sheetStatus || '')) {
                     if (sheetStatus !== predStatus) {
                         updatedStatuses[dateKey] = predStatus;
-                        await submitData(dateKey, `${dailyCounts[dateKey] || 0}|${predStatus}`);
+                        await submitData(dateKey, dailyCounts[dateKey] || 0, predStatus);
                     }
                 }
             }
         }
         setDailyStatuses(updatedStatuses);
-    };
-
-    const login = (id: string) => {
-        setUserId(id);
-        localStorage.setItem(USER_ID_STORAGE_KEY, id);
-    };
-
-    const logout = () => {
-        setUserId(null);
-        setDailyCounts({});
-        setDailyStatuses({});
-        localStorage.removeItem(USER_ID_STORAGE_KEY);
     };
 
     const savePeriodSettings = (settings: PeriodSettings) => {
@@ -267,12 +224,10 @@ export function useTracker() {
         dailyStatuses,
         isLoading,
         isPartnerView,
-        login,
-        logout,
         savePeriodSettings,
         connectPartner,
         togglePartnerView,
         toggleAppMode,
-        updateCounterAndSubmit
+        toggleStatus
     };
 }

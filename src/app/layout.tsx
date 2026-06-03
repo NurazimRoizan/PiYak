@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Space_Grotesk } from "next/font/google";
+import { ClerkProvider } from '@clerk/nextjs'
 import "./globals.css";
 
 const spaceGrotesk = Space_Grotesk({
@@ -8,12 +9,14 @@ const spaceGrotesk = Space_Grotesk({
 });
 
 export const metadata: Metadata = {
-  title: "PiYak Calendar",
-  description: "Poop & Flow Tracker",
-};
-
-export const viewport = {
-  themeColor: "#1e1e1e",
+  title: "PiYak - Poop & Period Tracker",
+  description: "Track your poops and periods with style.",
+  manifest: "/manifest.json",
+  icons: {
+    icon: "/images/icon-192x192.png",
+    apple: "/images/icon-192x192.png",
+  },
+  themeColor: "#000000",
 };
 
 export default function RootLayout({
@@ -22,14 +25,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="en"
-      className={`${spaceGrotesk.variable} h-full antialiased`}
-    >
-      <head>
-        <link rel="manifest" href="/PiYak/manifest.json" />
-      </head>
-      <body className="min-h-full flex flex-col">{children}</body>
-    </html>
+    <ClerkProvider>
+      <html lang="en" className={`${spaceGrotesk.variable} h-full antialiased`}>
+        <head>
+          <link rel="manifest" href="/manifest.json" />
+        </head>
+        <body className="min-h-full flex flex-col">{children}</body>
+      </html>
+    </ClerkProvider>
   );
 }

@@ -6,10 +6,12 @@ import Calendar from '@/components/Calendar';
 import PeriodSetupModal from '@/components/PeriodSetupModal';
 import PartnerSetupModal from '@/components/PartnerSetupModal';
 import StatusBar from '@/components/StatusBar';
+import { useAuth, SignInButton, UserButton } from '@clerk/nextjs';
 
 const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
 export default function Home() {
+    const { userId } = useAuth();
     const tracker = useTracker();
     const [userIdInput, setUserIdInput] = useState('');
     
@@ -45,25 +47,17 @@ export default function Home() {
         }
     };
 
-    const handleSaveUserId = () => {
-        if (userIdInput.trim()) {
-            tracker.login(userIdInput.trim());
-        } else {
-            alert('Please enter a valid User ID.');
-        }
-    };
-
     const handleActionClick = (action: string | number) => {
         if (!selectedDate) return alert('Select a date first.');
-        tracker.updateCounterAndSubmit(selectedDate, action);
+        tracker.toggleStatus(selectedDate, action);
     };
 
-    if (tracker.isLoading && tracker.userId) {
+    if (tracker.isLoading && userId) {
         return (
             <div className="fixed inset-0 bg-black z-[100] flex justify-center items-center">
                 <div className="relative w-full max-w-[500px] aspect-[9/16] max-h-screen">
                     <img 
-                        src="/PiYak/images/loader.PNG" 
+                        src="/images/loader.PNG" 
                         alt="Loading PiYak..." 
                         className="absolute inset-0 w-full h-full object-cover object-center" 
                     />
@@ -76,24 +70,16 @@ export default function Home() {
         );
     }
 
-    if (!tracker.userId) {
+    if (!userId) {
         return (
             <div className="w-[calc(100%-56px)] max-w-[700px] mx-auto p-8 mt-10 bg-white text-black border-4 border-black shadow-[8px_8px_0_0_#00FFFF] text-center">
-                <h2 className="text-3xl mb-6 font-extrabold uppercase">👋 Welcome!</h2>
-                <input 
-                    type="text" 
-                    value={userIdInput}
-                    onChange={(e) => setUserIdInput(e.target.value)}
-                    placeholder="Enter your name or ID"
-                    className="p-3 mb-6 w-[80%] max-w-[300px] bg-black text-white border-4 border-black font-bold uppercase placeholder:text-gray-400 focus:outline-none focus:ring-4 focus:ring-period-start"
-                />
-                <br />
-                <button 
-                    onClick={handleSaveUserId}
-                    className="bg-period-fertile text-black border-4 border-black shadow-[4px_4px_0_0_#000] hover:-translate-y-1 hover:shadow-[6px_6px_0_0_#000] active:translate-x-1 active:translate-y-1 active:shadow-none py-3 px-8 font-extrabold uppercase transition-all"
-                >
-                    Start Tracking
-                </button>
+                <h2 className="text-3xl mb-6 font-extrabold uppercase">👋 Welcome to PiYak!</h2>
+                <p className="mb-6 font-bold uppercase">Please sign in to access your secure tracker.</p>
+                <SignInButton mode="modal">
+                    <button className="bg-piyak-highlight text-black border-4 border-black shadow-[4px_4px_0_0_#000] hover:-translate-y-1 hover:shadow-[6px_6px_0_0_#000] active:translate-x-1 active:translate-y-1 active:shadow-none py-3 px-8 font-extrabold uppercase transition-all">
+                        Sign In / Register
+                    </button>
+                </SignInButton>
             </div>
         );
     }
@@ -103,7 +89,12 @@ export default function Home() {
 
     return (
         <div className="w-[calc(100%-56px)] max-w-[700px] mx-auto p-6 my-8 bg-black border-4 border-white shadow-[12px_12px_0_0_#FF00FF]">
-            <p className="text-xl font-bold uppercase tracking-widest text-piyak-highlight mb-1">{todayDateStr}</p>
+            <div className="flex justify-between items-start mb-1">
+                <p className="text-xl font-bold uppercase tracking-widest text-piyak-highlight">{todayDateStr}</p>
+                <div className="border-2 border-white p-1 bg-white hover:-translate-y-1 hover:shadow-[4px_4px_0_0_#00FFFF] transition-transform">
+                    <UserButton appearance={{ elements: { userButtonAvatarBox: "w-8 h-8 rounded-none border-2 border-black" } }} />
+                </div>
+            </div>
             <h1 className="text-4xl font-extrabold mb-4 uppercase text-white">{weekDayStr}</h1>
             
             <StatusBar 
@@ -199,18 +190,7 @@ export default function Home() {
             {/* Footer Actions */}
             <div className="mt-8 border-t-4 border-white pt-6 flex flex-col gap-4">
                 <div className="flex gap-4 justify-center">
-                    {!tracker.isPartnerView && (
-                        <button 
-                            onClick={() => {
-                                if (confirm('Are you sure you want to reset the saved User ID? You will need to re-enter it next time.')) {
-                                    tracker.logout();
-                                }
-                            }}
-                            className="bg-black text-period-start border-2 border-period-start px-4 py-2 font-bold uppercase hover:bg-period-start hover:text-white transition-colors"
-                        >
-                            Reset ID
-                        </button>
-                    )}
+
                     
                     {tracker.isPartnerView && (
                         <button 
@@ -256,7 +236,7 @@ export default function Home() {
             
             <PartnerSetupModal 
                 isOpen={isPartnerSetupOpen}
-                currentUserId={tracker.userId}
+                currentUserId={userId || ''}
                 onSave={(pId) => {
                     tracker.connectPartner(pId);
                     setIsPartnerSetupOpen(false);
