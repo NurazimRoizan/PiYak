@@ -2,7 +2,7 @@
     "name": "PiYak",
     "short_name": "PiYak",
     "description": "Piyed And Beyak Tracker",
-    "start_url": "./index.html",
+    "start_url": "/",
     "display": "standalone",
     "background_color": "#302f2d",
     "theme_color": "#ffe28c",

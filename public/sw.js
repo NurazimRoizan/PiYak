@@ -1,13 +1,9 @@
 const CACHE_NAME = 'piyak-cache-v7';
 const urlsToCache = [
-    './', // Caches the root index.html
-    './index.html',
-    './style.css',
-    './script.js',
-    './manifest.json',
-    './images/icon-192x192.png',
-    './images/icon-512x512.png'
-    // Add any other font or image assets here
+    '/',
+    '/manifest.json',
+    '/images/icon-192x192.png',
+    '/images/icon-512x512.png'
 ];
 
 // Install event: Caches all required assets
