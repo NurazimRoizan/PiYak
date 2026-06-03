@@ -9,6 +9,7 @@ datasource db {
 
 model User {
   id             String        @id
+  inviteCode     String?       @unique
   appMode        String        @default("counter")
   periodSettings String        @default("{\"periodLength\": 7, \"cycleLength\": 28}")
   partnerId      String?

@@ -236,13 +236,21 @@ export default function Home() {
             
             <PartnerSetupModal 
                 isOpen={isPartnerSetupOpen}
-                currentUserId={userId || ''}
-                onSave={(pId) => {
-                    tracker.connectPartner(pId);
-                    setIsPartnerSetupOpen(false);
-                    alert(`Partner ${pId} connected! Enjoy spying on each others.`);
+                inviteCode={tracker.inviteCode}
+                onSave={async (code) => {
+                    const success = await tracker.connectPartner(code);
+                    if (success) {
+                        setIsPartnerSetupOpen(false);
+                        alert(`Partner connected! Enjoy spying on each others.`);
+                    }
+                    return success;
                 }}
                 onCancel={() => setIsPartnerSetupOpen(false)}
+                onDisconnect={() => {
+                    tracker.disconnectPartner();
+                    setIsPartnerSetupOpen(false);
+                    alert("Disconnected from partner.");
+                }}
             />
         </div>
     );

@@ -21,21 +21,39 @@ export function useTracker() {
     const [isLoading, setIsLoading] = useState(true);
     const [isPartnerView, setIsPartnerView] = useState(false);
 
+    const [inviteCode, setInviteCode] = useState<string | null>(null);
+
     // Initial load from local storage
     useEffect(() => {
-        const savedPartnerId = localStorage.getItem(PARTNER_ID_STORAGE_KEY);
         const savedMode = (localStorage.getItem(MODE_STORAGE_KEY) as AppMode) || 'counter';
         const savedSettings = localStorage.getItem(PERIOD_SETTINGS_KEY);
 
-        if (savedPartnerId) setPartnerId(savedPartnerId);
         setAppMode(savedMode);
         
         if (savedSettings) {
             setPeriodSettings(JSON.parse(savedSettings));
         }
 
-        setIsLoading(false);
-    }, []);
+        const fetchPartnerInfo = async () => {
+            if (!userId) return;
+            try {
+                const res = await fetch('/api/partner');
+                if (res.ok) {
+                    const data = await res.json();
+                    setInviteCode(data.inviteCode);
+                    if (data.partnerId) {
+                        setPartnerId(data.partnerId);
+                    }
+                }
+            } catch (err) {
+                console.error("Failed to fetch partner info", err);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchPartnerInfo();
+    }, [userId]);
 
     const fetchDailyData = useCallback(async (activePartnerId?: string) => {
         if (!userId) return;
@@ -104,7 +122,10 @@ export function useTracker() {
     };
 
     const toggleStatus = async (dateKey: string, status: any) => {
-        if (isPartnerView) return; // Partners cannot edit
+        if (isPartnerView) {
+            alert("Viewing Partner is strictly read-only.");
+            return;
+        }
         if (!userId) return;
 
         const newCounts = { ...dailyCounts };
@@ -199,9 +220,37 @@ export function useTracker() {
         localStorage.setItem(MODE_STORAGE_KEY, 'period');
     };
 
-    const connectPartner = (id: string) => {
-        setPartnerId(id);
-        localStorage.setItem(PARTNER_ID_STORAGE_KEY, id);
+    const connectPartner = async (code: string) => {
+        try {
+            const res = await fetch('/api/partner', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ inviteCode: code })
+            });
+            const data = await res.json();
+            
+            if (!res.ok) {
+                alert(data.error || "Failed to connect to partner");
+                return false;
+            }
+            
+            setPartnerId(data.partnerId);
+            return true;
+        } catch (error) {
+            console.error("Connect error", error);
+            alert("Error connecting to partner.");
+            return false;
+        }
+    };
+
+    const disconnectPartner = async () => {
+        try {
+            await fetch('/api/partner', { method: 'DELETE' });
+            setPartnerId(null);
+            setIsPartnerView(false);
+        } catch (error) {
+            console.error("Disconnect error", error);
+        }
     };
 
     const togglePartnerView = () => {
@@ -217,6 +266,7 @@ export function useTracker() {
     return {
         userId,
         partnerId,
+        inviteCode,
         appMode,
         periodSettings,
         periodStartDate,
@@ -226,6 +276,7 @@ export function useTracker() {
         isPartnerView,
         savePeriodSettings,
         connectPartner,
+        disconnectPartner,
         togglePartnerView,
         toggleAppMode,
         toggleStatus

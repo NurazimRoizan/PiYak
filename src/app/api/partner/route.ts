@@ -1,0 +1,108 @@
+import { NextResponse } from 'next/server';
+import { auth } from '@clerk/nextjs/server';
+import { PrismaClient } from '@prisma/client';
+import crypto from 'crypto';
+
+const prisma = new PrismaClient();
+
+// Function to generate a random 6-character code
+function generateInviteCode() {
+    return crypto.randomBytes(3).toString('hex').toUpperCase(); // 6 chars
+}
+
+export async function GET(request: Request) {
+    const { userId } = await auth();
+    if (!userId) {
+        return new NextResponse("Unauthorized", { status: 401 });
+    }
+
+    try {
+        let user = await prisma.user.findUnique({ where: { id: userId } });
+        
+        // Auto-generate invite code if they don't have one
+        if (!user || !user.inviteCode) {
+            let newCode = generateInviteCode();
+            let isUnique = false;
+            
+            // Ensure uniqueness
+            while (!isUnique) {
+                const existing = await prisma.user.findUnique({ where: { inviteCode: newCode } });
+                if (!existing) {
+                    isUnique = true;
+                } else {
+                    newCode = generateInviteCode();
+                }
+            }
+
+            user = await prisma.user.upsert({
+                where: { id: userId },
+                update: { inviteCode: newCode },
+                create: { id: userId, inviteCode: newCode }
+            });
+        }
+
+        return NextResponse.json({ 
+            inviteCode: user.inviteCode,
+            partnerId: user.partnerId
+        });
+    } catch (e: any) {
+        return NextResponse.json({ error: e.message }, { status: 500 });
+    }
+}
+
+export async function POST(request: Request) {
+    const { userId } = await auth();
+    if (!userId) {
+        return new NextResponse("Unauthorized", { status: 401 });
+    }
+
+    try {
+        const { inviteCode } = await request.json();
+        if (!inviteCode || typeof inviteCode !== 'string') {
+            return NextResponse.json({ error: "Invalid invite code" }, { status: 400 });
+        }
+
+        const cleanCode = inviteCode.trim().toUpperCase();
+
+        const targetUser = await prisma.user.findUnique({
+            where: { inviteCode: cleanCode }
+        });
+
+        if (!targetUser) {
+            return NextResponse.json({ error: "Partner not found with this code" }, { status: 404 });
+        }
+
+        if (targetUser.id === userId) {
+            return NextResponse.json({ error: "You cannot partner with yourself" }, { status: 400 });
+        }
+
+        // Set current user's partnerId to the target user's ID
+        await prisma.user.update({
+            where: { id: userId },
+            data: { partnerId: targetUser.id }
+        });
+
+        return NextResponse.json({ success: true, partnerId: targetUser.id });
+    } catch (e: any) {
+        console.error(e);
+        return NextResponse.json({ error: e.message }, { status: 500 });
+    }
+}
+
+export async function DELETE(request: Request) {
+    const { userId } = await auth();
+    if (!userId) {
+        return new NextResponse("Unauthorized", { status: 401 });
+    }
+
+    try {
+        await prisma.user.update({
+            where: { id: userId },
+            data: { partnerId: null }
+        });
+
+        return NextResponse.json({ success: true });
+    } catch (e: any) {
+        return NextResponse.json({ error: e.message }, { status: 500 });
+    }
+}

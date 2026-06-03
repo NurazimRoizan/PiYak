@@ -11,7 +11,18 @@ export async function GET(request: Request) {
     }
 
     const { searchParams } = new URL(request.url);
-    const targetUserId = searchParams.get('partnerId') || userId;
+    const requestedPartnerId = searchParams.get('partnerId');
+
+    let targetUserId = userId;
+
+    if (requestedPartnerId) {
+        // Verify authorization
+        const currentUser = await prisma.user.findUnique({ where: { id: userId } });
+        if (currentUser?.partnerId !== requestedPartnerId) {
+            return new NextResponse("Forbidden: You are not connected to this partner", { status: 403 });
+        }
+        targetUserId = requestedPartnerId;
+    }
 
     try {
         const records = await prisma.dailyRecord.findMany({
@@ -42,7 +53,11 @@ export async function POST(request: Request) {
         const body = await request.json();
         const { date, count, status, partnerId } = body;
         
-        const targetUserId = partnerId || userId;
+        if (partnerId && partnerId !== userId) {
+            return new NextResponse("Forbidden: Cannot modify partner's data", { status: 403 });
+        }
+
+        const targetUserId = userId;
 
         // Ensure user exists first
         await prisma.user.upsert({
