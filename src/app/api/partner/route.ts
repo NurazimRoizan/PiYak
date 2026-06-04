@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs/server';
+import { auth, clerkClient } from '@clerk/nextjs/server';
 import { PrismaClient } from '@prisma/client';
 import crypto from 'crypto';
 
@@ -41,9 +41,25 @@ export async function GET(request: Request) {
             });
         }
 
+        let partnerUsername = null;
+        let partnerImageUrl = null;
+        
+        if (user.partnerId) {
+            try {
+                const client = await clerkClient();
+                const partnerUser = await client.users.getUser(user.partnerId);
+                partnerUsername = partnerUser.username || partnerUser.firstName || "Partner";
+                partnerImageUrl = partnerUser.imageUrl || null;
+            } catch (err) {
+                console.error("Failed to fetch partner from Clerk", err);
+            }
+        }
+
         return NextResponse.json({ 
             inviteCode: user.inviteCode,
-            partnerId: user.partnerId
+            partnerId: user.partnerId,
+            partnerUsername,
+            partnerImageUrl
         });
     } catch (e: any) {
         return NextResponse.json({ error: e.message }, { status: 500 });

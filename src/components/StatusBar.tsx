@@ -31,7 +31,7 @@ export default function StatusBar({
     }, [appMode, isPartnerView, periodStartDate, periodSettings, dailyCounts]);
 
     return (
-        <div className="mt-6 p-4 bg-white text-black border-4 border-black shadow-[6px_6px_0_0_#00FFFF] text-center font-extrabold uppercase tracking-widest text-lg transform -rotate-1 hover:rotate-0 transition-transform cursor-default">
+        <div className="mt-2 py-2 px-4 bg-white text-black border-4 border-black shadow-[4px_4px_0_0_#00FFFF] text-center font-extrabold uppercase tracking-widest text-base sm:text-lg transform -rotate-1 hover:rotate-0 transition-transform cursor-default">
             {appMode === 'period' ? '🩸 ' : '💩 '}
             {statusText}
         </div>

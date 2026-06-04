@@ -21,6 +21,8 @@ export function useTracker() {
     const [isLoading, setIsLoading] = useState(true);
     const [isPartnerView, setIsPartnerView] = useState(false);
 
+    const [partnerUsername, setPartnerUsername] = useState<string | null>(null);
+    const [partnerImageUrl, setPartnerImageUrl] = useState<string | null>(null);
     const [inviteCode, setInviteCode] = useState<string | null>(null);
 
     // Initial load from local storage
@@ -43,6 +45,8 @@ export function useTracker() {
                     setInviteCode(data.inviteCode);
                     if (data.partnerId) {
                         setPartnerId(data.partnerId);
+                        setPartnerUsername(data.partnerUsername);
+                        setPartnerImageUrl(data.partnerImageUrl);
                     }
                 }
             } catch (err) {
@@ -247,6 +251,8 @@ export function useTracker() {
         try {
             await fetch('/api/partner', { method: 'DELETE' });
             setPartnerId(null);
+            setPartnerUsername(null);
+            setPartnerImageUrl(null);
             setIsPartnerView(false);
         } catch (error) {
             console.error("Disconnect error", error);
@@ -266,6 +272,8 @@ export function useTracker() {
     return {
         userId,
         partnerId,
+        partnerUsername,
+        partnerImageUrl,
         inviteCode,
         appMode,
         periodSettings,
