@@ -17,7 +17,7 @@ export default function StatusBar({
 }: StatusBarProps) {
     const statusText = useMemo(() => {
         if (isPartnerView) {
-            return "👀 Snooping on Partner";
+            return "🥸 TOP SECRET SNOOP MODE";
         }
 
         if (appMode === 'counter') {

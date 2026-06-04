@@ -7,6 +7,7 @@ import PeriodSetupModal from '@/components/PeriodSetupModal';
 import PartnerSetupModal from '@/components/PartnerSetupModal';
 import StatusBar from '@/components/StatusBar';
 import { useAuth, useUser, SignInButton, UserButton } from '@clerk/nextjs';
+import { dark } from '@clerk/themes';
 
 const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
@@ -93,8 +94,13 @@ export default function Home() {
         <div className="w-[calc(100%-56px)] max-w-[700px] mx-auto p-6 my-8 bg-black border-4 border-white shadow-[12px_12px_0_0_#FF00FF]">
             <div className="flex justify-between items-start mb-1">
                 <p className="text-xl font-bold uppercase tracking-widest text-piyak-highlight">{todayDateStr}</p>
-                <div className="border-2 border-white p-1 bg-white hover:-translate-y-1 hover:shadow-[4px_4px_0_0_#00FFFF] transition-transform">
-                    <UserButton appearance={{ elements: { userButtonAvatarBox: "w-8 h-8 rounded-none border-2 border-black" } }} />
+                <div className="border-4 border-black p-1 bg-white shadow-[4px_4px_0_0_#FF00FF] hover:-translate-y-1 hover:shadow-[6px_6px_0_0_#FF00FF] transition-transform rotate-[3deg] hover:rotate-0">
+                    <UserButton 
+                        appearance={{ 
+                            baseTheme: dark,
+                            elements: { userButtonAvatarBox: "w-8 h-8 rounded-none border-2 border-black" } 
+                        }} 
+                    />
                 </div>
             </div>
             <h1 className="text-4xl font-extrabold mb-4 uppercase text-white">{weekDayStr}</h1>
@@ -194,7 +200,7 @@ export default function Home() {
                 <div className="flex justify-between items-center gap-4 text-base mt-2">
                     <div className="flex flex-col gap-1 overflow-hidden">
                         <span className="truncate font-bold text-gray-200 text-lg">
-                            {tracker.isPartnerView ? `🕵️ Spying on: ${tracker.partnerUsername || 'Partner'}` : `👤 Logged in as: ${currentUsername}`}
+                            {tracker.isPartnerView ? `🕵️ Snooping on: ${tracker.partnerUsername || 'Partner'}` : `👤 Logged in as: ${currentUsername}`}
                         </span>
                         {tracker.isPartnerView ? (
                             <div className="flex gap-4 mt-2">
@@ -202,7 +208,7 @@ export default function Home() {
                                     onClick={() => tracker.togglePartnerView()}
                                     className="bg-white text-black border-2 border-black shadow-[2px_2px_0_0_#00FFFF] hover:-translate-y-1 hover:shadow-[4px_4px_0_0_#00FFFF] px-3 py-1 text-xs uppercase font-extrabold transition-transform"
                                 >
-                                    🔙 Back to Me
+                                    Back to Me
                                 </button>
                                 <button 
                                     onClick={() => setIsPartnerSetupOpen(true)}
