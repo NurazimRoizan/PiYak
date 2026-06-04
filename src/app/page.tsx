@@ -191,56 +191,68 @@ export default function Home() {
 
             {/* Footer Actions */}
             <div className="mt-8 border-t-4 border-white pt-6 flex flex-col gap-4">
-                <div className="flex justify-between items-end gap-4 text-sm mt-2">
+                <div className="flex justify-between items-center gap-4 text-base mt-2">
                     <div className="flex flex-col gap-1 overflow-hidden">
-                        <span className="truncate font-bold text-gray-300">
+                        <span className="truncate font-bold text-gray-200 text-lg">
                             {tracker.isPartnerView ? `🕵️ Spying on: ${tracker.partnerUsername || 'Partner'}` : `👤 Logged in as: ${currentUsername}`}
                         </span>
-                        {tracker.isPartnerView && (
+                        {tracker.isPartnerView ? (
+                            <div className="flex gap-4 mt-2">
+                                <button 
+                                    onClick={() => tracker.togglePartnerView()}
+                                    className="bg-white text-black border-2 border-black shadow-[2px_2px_0_0_#00FFFF] hover:-translate-y-1 hover:shadow-[4px_4px_0_0_#00FFFF] px-3 py-1 text-xs uppercase font-extrabold transition-transform"
+                                >
+                                    🔙 Back to Me
+                                </button>
+                                <button 
+                                    onClick={() => setIsPartnerSetupOpen(true)}
+                                    className="text-left text-piyak-highlight hover:text-white underline bg-transparent border-none cursor-pointer text-xs uppercase font-bold self-center"
+                                >
+                                    Change Partner
+                                </button>
+                            </div>
+                        ) : (
                             <button 
                                 onClick={() => setIsPartnerSetupOpen(true)}
-                                className="text-left text-piyak-highlight hover:text-white underline bg-transparent border-none cursor-pointer text-xs uppercase font-bold"
+                                className="text-left text-[#8c9eff] hover:text-[#a0b0ff] underline bg-transparent border-none cursor-pointer text-xs uppercase font-bold mt-1"
                             >
-                                Change Partner
+                                Setup Partner
                             </button>
                         )}
                     </div>
                     
-                    <button 
-                        onClick={() => {
-                            if (!tracker.partnerId && !tracker.isPartnerView) {
-                                setIsPartnerSetupOpen(true);
-                            } else {
-                                tracker.togglePartnerView();
-                            }
-                        }}
-                        className="relative group transition-transform hover:-translate-y-1 hover:rotate-2 active:scale-95 shrink-0"
-                    >
+                    <div className="flex items-center">
                         {tracker.partnerId ? (
-                            <div className="w-16 h-16 bg-white border-4 border-black p-1 shadow-[4px_4px_0_0_#00FFFF] flex justify-center items-center overflow-hidden rotate-[-5deg]">
+                            <div 
+                                onClick={() => !tracker.isPartnerView && tracker.togglePartnerView()}
+                                className={`relative group w-12 h-12 bg-white border-4 border-black p-1 shadow-[4px_4px_0_0_#00FFFF] flex justify-center items-center overflow-hidden rotate-[5deg] ${!tracker.isPartnerView ? 'cursor-pointer hover:rotate-12 hover:-translate-y-1 transition-transform' : ''}`}
+                            >
                                 {tracker.partnerImageUrl ? (
                                     // eslint-disable-next-line @next/next/no-img-element
                                     <img src={tracker.partnerImageUrl} alt="Partner" className="w-full h-full object-cover" />
                                 ) : (
-                                    <div className="w-full h-full bg-[#FF00FF] flex justify-center items-center text-white font-extrabold text-2xl">
+                                    <div className="w-full h-full bg-[#FF00FF] flex justify-center items-center text-white font-extrabold text-xl">
                                         {(tracker.partnerUsername?.[0] || '?').toUpperCase()}
                                     </div>
                                 )}
                                 {/* Tape effect */}
-                                <div className="absolute -top-3 left-1/2 -translate-x-1/2 w-8 h-4 bg-white/50 backdrop-blur-sm border border-gray-300 rotate-[10deg]"></div>
+                                <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-6 h-3 bg-white/50 backdrop-blur-sm border border-gray-300 rotate-[-10deg]"></div>
                                 
-                                {tracker.isPartnerView && (
-                                     <div className="absolute -top-1 -right-1 bg-black text-white border-2 border-white px-1 text-[10px] font-bold rotate-[15deg]">
-                                         BACK
+                                {!tracker.isPartnerView && (
+                                     <div className="absolute -bottom-1 -right-1 bg-black text-white border border-white px-1 text-[8px] font-bold rotate-[-15deg]">
+                                         VIEW
                                      </div>
                                 )}
                             </div>
                         ) : (
-                            <div className="bg-[#FFFF00] text-black border-4 border-black px-4 py-2 font-extrabold uppercase shadow-[4px_4px_0_0_#FF00FF] rotate-[3deg] text-xs whitespace-nowrap">
+                            <button 
+                                onClick={() => setIsPartnerSetupOpen(true)}
+                                className="bg-[#FFFF00] text-black border-4 border-black px-4 py-2 font-extrabold uppercase shadow-[4px_4px_0_0_#FF00FF] rotate-[3deg] text-xs whitespace-nowrap hover:-translate-y-1 transition-transform active:translate-y-1 active:shadow-none"
+                            >
                                 🔗 Connect
-                            </div>
+                            </button>
                         )}
-                    </button>
+                    </div>
                 </div>
             </div>
 

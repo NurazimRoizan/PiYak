@@ -17,7 +17,7 @@ export default function StatusBar({
 }: StatusBarProps) {
     const statusText = useMemo(() => {
         if (isPartnerView) {
-            return "Viewing Partner's Calendar (Read Only)";
+            return "👀 Snooping on Partner";
         }
 
         if (appMode === 'counter') {
