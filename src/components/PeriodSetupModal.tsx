@@ -27,11 +27,14 @@ export default function PeriodSetupModal({ isOpen, initialSettings, onSave }: Pe
     };
 
     return (
-        <div className="fixed top-0 left-0 w-full h-full bg-black/90 z-20 flex justify-center items-start pt-[10%] backdrop-blur-sm">
-            <div className="bg-black text-white p-6 w-[90%] max-w-[400px] border-4 border-white shadow-[12px_12px_0_0_#FF00FF]">
-                <h3 className="mt-0 text-period-start text-2xl font-extrabold mb-6 uppercase">🩸 Cycle Setup</h3>
+        <div className="fixed top-0 left-0 w-full h-full bg-black/80 z-[150] flex justify-center items-start pt-[10%] backdrop-blur-sm">
+            <div className="bg-[#FFFF00] text-black p-8 w-[90%] max-w-[400px] border-8 border-black shadow-[16px_16px_0_0_#FF00FF] rotate-[2deg]">
+                {/* Tape element */}
+                <div className="absolute -top-4 left-1/2 -translate-x-1/2 w-16 h-8 bg-white/70 backdrop-blur-md border border-gray-400 rotate-[-4deg]"></div>
 
-                <label htmlFor="periodLength" className="block mt-4 text-white font-bold uppercase text-sm">
+                <h3 className="mt-2 text-black text-3xl font-black mb-6 uppercase tracking-tighter">⚙️ CYCLE SETUP</h3>
+
+                <label htmlFor="periodLength" className="block mt-4 text-black font-extrabold uppercase text-sm border-b-2 border-black pb-1">
                     1. Period Length (days)
                 </label>
                 <input 
@@ -41,10 +44,10 @@ export default function PeriodSetupModal({ isOpen, initialSettings, onSave }: Pe
                     onChange={(e) => setPeriodLength(parseInt(e.target.value))}
                     min="3" 
                     max="15"
-                    className="w-full p-3 mt-2 bg-black text-white border-4 border-white font-bold focus:outline-none focus:ring-4 focus:ring-period-start"
+                    className="w-full p-4 mt-2 bg-white text-black border-4 border-black font-bold focus:outline-none focus:ring-0 focus:border-[#FF00FF] shadow-[4px_4px_0_0_#000] hover:shadow-[6px_6px_0_0_#000] transition-shadow text-xl"
                 />
 
-                <label htmlFor="cycleLength" className="block mt-6 text-white font-bold uppercase text-sm">
+                <label htmlFor="cycleLength" className="block mt-6 text-black font-extrabold uppercase text-sm border-b-2 border-black pb-1">
                     2. Cycle Length (days)
                 </label>
                 <input 
@@ -54,14 +57,14 @@ export default function PeriodSetupModal({ isOpen, initialSettings, onSave }: Pe
                     onChange={(e) => setCycleLength(parseInt(e.target.value))}
                     min="20" 
                     max="45"
-                    className="w-full p-3 mt-2 bg-black text-white border-4 border-white font-bold focus:outline-none focus:ring-4 focus:ring-period-start"
+                    className="w-full p-4 mt-2 bg-white text-black border-4 border-black font-bold focus:outline-none focus:ring-0 focus:border-[#FF00FF] shadow-[4px_4px_0_0_#000] hover:shadow-[6px_6px_0_0_#000] transition-shadow text-xl"
                 />
 
                 <button 
                     onClick={handleSave}
-                    className="w-full p-4 mt-8 bg-period-fertile text-black border-4 border-black shadow-[4px_4px_0_0_#fff] hover:-translate-y-1 hover:shadow-[6px_6px_0_0_#fff] active:translate-x-1 active:translate-y-1 active:shadow-none font-extrabold uppercase transition-all"
+                    className="w-full p-5 mt-8 bg-black text-white border-4 border-black shadow-[6px_6px_0_0_#FF00FF] hover:-translate-y-1 hover:shadow-[8px_8px_0_0_#FF00FF] active:translate-x-1 active:translate-y-1 active:shadow-none font-black text-xl uppercase transition-all"
                 >
-                    Save & Start
+                    SAVE & START
                 </button>
             </div>
         </div>

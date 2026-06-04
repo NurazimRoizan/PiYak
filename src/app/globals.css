@@ -30,6 +30,8 @@
 
 body {
   background-color: var(--color-piyak-bg);
+  background-image: radial-gradient(circle, #2a2a2a 2px, transparent 2px);
+  background-size: 20px 20px;
   color: var(--color-piyak-text);
   font-family: var(--font-space-grotesk), sans-serif;
 }
@@ -42,10 +44,10 @@ body {
 .poop-bar-animated {
   background-image: repeating-linear-gradient(
     -45deg,
-    #3b1c00 0px,
-    #3b1c00 10px,
-    #5c2c00 10px,
-    #5c2c00 20px
+    #5C4033 0px,
+    #5C4033 10px,
+    #8B5A2B 10px,
+    #8B5A2B 20px
   );
   background-size: 28.28px 28.28px;
   animation: slide-poop 0.6s linear infinite;
