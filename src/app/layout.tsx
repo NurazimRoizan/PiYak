@@ -19,6 +19,8 @@ export const metadata: Metadata = {
   themeColor: "#000000",
 };
 
+import NotificationToaster from "@/components/NotificationToaster";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -32,6 +34,7 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col">
         <ClerkProvider>
           {children}
+          <NotificationToaster />
         </ClerkProvider>
       </body>
     </html>

@@ -6,6 +6,7 @@ import Calendar from '@/components/Calendar';
 import PeriodSetupModal from '@/components/PeriodSetupModal';
 import PartnerSetupModal from '@/components/PartnerSetupModal';
 import StatusBar from '@/components/StatusBar';
+import PushNotificationButton from '@/components/PushNotificationButton';
 import { useAuth, useUser, SignInButton, UserButton } from '@clerk/nextjs';
 import { dark } from '@clerk/themes';
 
@@ -225,6 +226,7 @@ export default function Home() {
                                 Setup Partner
                             </button>
                         )}
+                        <PushNotificationButton />
                     </div>
                     
                     <div className="flex items-center">

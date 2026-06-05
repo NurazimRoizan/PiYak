@@ -66,6 +66,11 @@ export async function POST(request: Request) {
             create: { id: targetUserId }
         });
 
+        // Get previous record
+        const previousRecord = await prisma.dailyRecord.findUnique({
+            where: { userId_dateKey: { userId: targetUserId, dateKey: date } }
+        });
+
         if (count === 0 && (!status || status === 'clear')) {
             // Delete record if it's completely cleared
             await prisma.dailyRecord.deleteMany({
@@ -77,6 +82,62 @@ export async function POST(request: Request) {
                 update: { counterValue: count, status: status === 'clear' ? null : (status || null) },
                 create: { userId: targetUserId, dateKey: date, counterValue: count, status: status === 'clear' ? null : (status || null) }
             });
+        }
+
+        // Notification logic
+        if (count > (previousRecord?.counterValue || 0)) {
+            // A new poop was logged! Find snoopers
+            const snoopers = await prisma.user.findMany({
+                where: { partnerId: targetUserId },
+                include: { pushSubscriptions: true }
+            });
+
+            if (snoopers.length > 0) {
+                const notificationsToCreate = snoopers.map(s => ({
+                    userId: s.id,
+                    message: "Your partner just logged a poop! 💩"
+                }));
+                
+                await prisma.notification.createMany({
+                    data: notificationsToCreate
+                });
+
+                if (process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
+                    try {
+                        const webPush = (await import('web-push')).default;
+                        webPush.setVapidDetails(
+                            process.env.NEXT_PUBLIC_VAPID_SUBJECT || 'mailto:test@example.com',
+                            process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY,
+                            process.env.VAPID_PRIVATE_KEY
+                        );
+
+                        const payload = JSON.stringify({
+                            title: 'PiYak Update',
+                            message: 'Your partner just logged a poop! 💩'
+                        });
+
+                        snoopers.forEach(snooper => {
+                            snooper.pushSubscriptions.forEach(sub => {
+                                const pushSubscription = {
+                                    endpoint: sub.endpoint,
+                                    keys: {
+                                        auth: sub.auth,
+                                        p256dh: sub.p256dh
+                                    }
+                                };
+                                webPush.sendNotification(pushSubscription, payload).catch(err => {
+                                    console.error("Failed to send push", err);
+                                    if (err.statusCode === 410 || err.statusCode === 404) {
+                                        prisma.pushSubscription.delete({ where: { id: sub.id } }).catch(console.error);
+                                    }
+                                });
+                            });
+                        });
+                    } catch (err) {
+                        console.error("Web Push setup error:", err);
+                    }
+                }
+            }
         }
 
         return NextResponse.json({ success: true });
