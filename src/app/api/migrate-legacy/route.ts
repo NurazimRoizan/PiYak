@@ -36,7 +36,7 @@ export async function GET(request: Request) {
         // Find users
         const users = await client.users.getUserList();
         
-        const geeUser = users.data.find(u => u.username?.toLowerCase() === 'gee' || u.firstName?.toLowerCase() === 'gee');
+        const geeUser = users.data.find(u => u.username?.toLowerCase() === 'geey' || u.firstName?.toLowerCase() === 'geey');
         const nyottUser = users.data.find(u => u.username?.toLowerCase() === 'nyott' || u.firstName?.toLowerCase() === 'nyott');
 
         const results: any = {};
