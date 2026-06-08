@@ -6,7 +6,7 @@ import Calendar from '@/components/Calendar';
 import PeriodSetupModal from '@/components/PeriodSetupModal';
 import PartnerSetupModal from '@/components/PartnerSetupModal';
 import StatusBar from '@/components/StatusBar';
-import PushNotificationButton from '@/components/PushNotificationButton';
+import PushNotificationModal from '@/components/PushNotificationModal';
 import { useAuth, useUser, SignInButton, UserButton } from '@clerk/nextjs';
 import { dark } from '@clerk/themes';
 
@@ -28,6 +28,7 @@ export default function Home() {
     const [selectedDate, setSelectedDate] = useState<string | null>(null);
     const [isPeriodSetupOpen, setIsPeriodSetupOpen] = useState(false);
     const [isPartnerSetupOpen, setIsPartnerSetupOpen] = useState(false);
+    const [isNotificationModalOpen, setIsNotificationModalOpen] = useState(false);
 
     // Initial selected date
     useEffect(() => {
@@ -101,7 +102,11 @@ export default function Home() {
                             baseTheme: dark,
                             elements: { userButtonAvatarBox: "w-8 h-8 rounded-none border-2 border-black" } 
                         }} 
-                    />
+                    >
+                        <UserButton.MenuItems>
+                            <UserButton.Action label="Push Notifications" labelIcon={<span className="mr-2">🔔</span>} onClick={() => setIsNotificationModalOpen(true)} />
+                        </UserButton.MenuItems>
+                    </UserButton>
                 </div>
             </div>
             <h1 className="text-4xl font-extrabold mb-4 uppercase text-white">{weekDayStr}</h1>
@@ -226,7 +231,6 @@ export default function Home() {
                                 Setup Partner
                             </button>
                         )}
-                        <PushNotificationButton />
                     </div>
                     
                     <div className="flex items-center">
@@ -291,6 +295,11 @@ export default function Home() {
                     setIsPartnerSetupOpen(false);
                     alert("Disconnected from partner.");
                 }}
+            />
+
+            <PushNotificationModal 
+                isOpen={isNotificationModalOpen}
+                onClose={() => setIsNotificationModalOpen(false)}
             />
         </div>
     );

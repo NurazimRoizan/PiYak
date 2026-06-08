@@ -18,7 +18,7 @@ function urlBase64ToUint8Array(base64String: string) {
     return outputArray;
 }
 
-export default function PushNotificationButton() {
+export default function PushNotificationModal({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) {
     const [isSupported, setIsSupported] = useState(false);
     const [isSubscribed, setIsSubscribed] = useState(false);
     const [loading, setLoading] = useState(true);
@@ -37,7 +37,7 @@ export default function PushNotificationButton() {
         } else {
             setLoading(false);
         }
-    }, []);
+    }, [isOpen]);
 
     const subscribeToPush = async () => {
         try {
@@ -76,6 +76,7 @@ export default function PushNotificationButton() {
 
             if (res.ok) {
                 setIsSubscribed(true);
+                setTimeout(() => onClose(), 1500); // Close after showing success
             } else {
                 console.error("Failed to save subscription on server");
             }
@@ -86,24 +87,45 @@ export default function PushNotificationButton() {
         }
     };
 
-    if (!isSupported || loading) {
-        return null; // Don't show anything if unsupported or loading
-    }
-
-    if (isSubscribed) {
-        return (
-            <div className="bg-black text-[#00FFFF] border-2 border-[#00FFFF] px-3 py-1 text-xs uppercase font-extrabold flex items-center justify-center gap-1 shadow-[2px_2px_0_0_#00FFFF] mt-1">
-                <span className="text-sm">🔔</span> Notifications On
-            </div>
-        );
-    }
+    if (!isOpen) return null;
 
     return (
-        <button 
-            onClick={subscribeToPush}
-            className="bg-[#00FFFF] text-black border-2 border-black hover:-translate-y-1 shadow-[2px_2px_0_0_#000] hover:shadow-[4px_4px_0_0_#000] px-3 py-1 text-xs uppercase font-extrabold transition-transform mt-1 animate-pulse"
-        >
-            🔔 Enable Notifications
-        </button>
+        <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
+            <div className="bg-white border-4 border-black p-6 w-full max-w-sm shadow-[8px_8px_0_0_#FF00FF]">
+                <h2 className="text-2xl font-extrabold text-black uppercase mb-4 tracking-widest text-center border-b-4 border-black pb-2">
+                    Push Notifications
+                </h2>
+                
+                {!isSupported && !loading ? (
+                    <p className="text-black font-bold text-center mb-6">
+                        Your device/browser does not support Web Push Notifications. (If on iOS, make sure you add this app to your Home Screen first!)
+                    </p>
+                ) : loading ? (
+                    <div className="text-black font-bold text-center mb-6 animate-pulse">Checking status...</div>
+                ) : isSubscribed ? (
+                    <div className="text-black font-bold text-center mb-6">
+                        <div className="text-4xl mb-2">🔔</div>
+                        <p>You are successfully subscribed to Push Notifications!</p>
+                    </div>
+                ) : (
+                    <div className="text-black font-bold text-center mb-6">
+                        <p className="mb-4">Get an instant notification whenever your partner logs a poop!</p>
+                        <button 
+                            onClick={subscribeToPush}
+                            className="w-full bg-[#00FFFF] text-black border-4 border-black hover:-translate-y-1 shadow-[4px_4px_0_0_#000] hover:shadow-[6px_6px_0_0_#000] active:translate-x-1 active:translate-y-1 active:shadow-none py-3 font-extrabold uppercase transition-all mb-2"
+                        >
+                            Enable Now
+                        </button>
+                    </div>
+                )}
+
+                <button 
+                    onClick={onClose}
+                    className="w-full bg-black text-white border-4 border-black hover:-translate-y-1 shadow-[4px_4px_0_0_#00FFFF] hover:shadow-[6px_6px_0_0_#00FFFF] active:translate-x-1 active:translate-y-1 active:shadow-none py-2 font-extrabold uppercase transition-all mt-2"
+                >
+                    Close
+                </button>
+            </div>
+        </div>
     );
 }
