@@ -32,6 +32,16 @@ export default function NotificationToaster() {
                                 (n: Notification) => !prev.some(p => p.id === n.id)
                             );
                             
+                            // Trigger native OS notification for new ones (User requested double dings!)
+                            if (newNotifications.length > 0 && typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
+                                newNotifications.forEach((n: Notification) => {
+                                    new Notification('PiYak Update', {
+                                        body: n.message,
+                                        icon: '/images/icon-192x192.png',
+                                    });
+                                });
+                            }
+                            
                             return data.notifications;
                         });
                     } else {

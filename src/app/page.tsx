@@ -206,7 +206,7 @@ export default function Home() {
                 <div className="flex justify-between items-center gap-4 text-base mt-2">
                     <div className="flex flex-col gap-1 overflow-hidden">
                         <span className="truncate font-bold text-gray-200 text-lg">
-                            {tracker.isPartnerView ? `🕵️ Snooping on: ${tracker.partnerUsername || 'Partner'}` : `👤 Logged in as: ${currentUsername}`}
+                            {tracker.isPartnerView ? `🕵️ Viewing: ${tracker.partnerUsername || 'Partner'}` : `👤 Me: ${currentUsername}`}
                         </span>
                         {tracker.isPartnerView ? (
                             <div className="flex gap-4 mt-2">
