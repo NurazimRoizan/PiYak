@@ -27,12 +27,17 @@ export default function PushNotificationModal({ isOpen, onClose }: { isOpen: boo
         if ('serviceWorker' in navigator && 'PushManager' in window) {
             setIsSupported(true);
             
-            // Check if already subscribed
-            navigator.serviceWorker.ready.then((registration) => {
-                registration.pushManager.getSubscription().then((subscription) => {
-                    setIsSubscribed(subscription !== null);
-                    setLoading(false);
+            // Check if already subscribed by explicitly registering first
+            navigator.serviceWorker.register('/sw.js').then(() => {
+                navigator.serviceWorker.ready.then((registration) => {
+                    registration.pushManager.getSubscription().then((subscription) => {
+                        setIsSubscribed(subscription !== null);
+                        setLoading(false);
+                    });
                 });
+            }).catch(err => {
+                console.error("Service Worker registration failed:", err);
+                setLoading(false);
             });
         } else {
             setLoading(false);
