@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { PrismaClient } from '@prisma/client';
+import { processAchievements } from '@/utils/achievementsLogic';
 
 const prisma = new PrismaClient();
 
@@ -140,7 +141,30 @@ export async function POST(request: Request) {
             }
         }
 
-        return NextResponse.json({ success: true });
+        // Process Achievements
+        const allRecords = await prisma.dailyRecord.findMany({
+            where: { userId: targetUserId }
+        });
+        
+        const user = await prisma.user.findUnique({ where: { id: targetUserId } });
+        
+        let newlyUnlocked: string[] = [];
+        if (user) {
+            newlyUnlocked = await processAchievements(
+                targetUserId,
+                prisma,
+                allRecords,
+                user,
+                {
+                    isNewPoop: count > (previousRecord?.counterValue || 0),
+                    isMistake: count < (previousRecord?.counterValue || 0),
+                    isPeriodStart: status === 'start',
+                    isPeriodEnd: status === 'end'
+                }
+            );
+        }
+
+        return NextResponse.json({ success: true, newlyUnlocked });
     } catch (e: any) {
         console.error(e);
         return NextResponse.json({ error: e.message }, { status: 500 });

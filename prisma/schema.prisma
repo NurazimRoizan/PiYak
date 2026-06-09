@@ -16,6 +16,7 @@ model User {
   records        DailyRecord[]
   notifications  Notification[]
   pushSubscriptions PushSubscription[]
+  achievements   UserAchievement[]
 }
 
 model Notification {
@@ -46,4 +47,14 @@ model DailyRecord {
   user         User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, dateKey])
+}
+
+model UserAchievement {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  code       String
+  unlockedAt DateTime @default(now())
+
+  @@unique([userId, code])
 }
