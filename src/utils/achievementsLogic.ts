@@ -50,13 +50,25 @@ export async function processAchievements(
         if (r.counterValue > maxInDay) maxInDay = r.counterValue;
         if (r.counterValue >= 2) unlock('DOUBLE_TROUBLE');
         if (r.counterValue >= 3) unlock('THE_MACHINE');
+        if (r.counterValue >= 5) unlock('OVERACHIEVER');
         
         const date = new Date(r.dateKey);
-        // Date.getDay() -> 0 is Sun, 1 is Mon, 2 is Tue
         if (date.getUTCDay() === 2) {
             unlock('TACO_TUESDAY');
         }
     });
+
+    // Weekend Warrior
+    const saturdayDates = poopRecords.filter(r => new Date(r.dateKey).getUTCDay() === 6).map(r => r.dateKey);
+    const sundayDates = poopRecords.filter(r => new Date(r.dateKey).getUTCDay() === 0).map(r => r.dateKey);
+    for (const sat of saturdayDates) {
+        const satDate = new Date(sat + 'T00:00:00');
+        satDate.setDate(satDate.getDate() + 1); // Get Sunday
+        const expectedSunDateKey = getDateKey(satDate.getFullYear(), satDate.getMonth(), satDate.getDate());
+        if (sundayDates.includes(expectedSunDateKey)) {
+            await unlock('WEEKEND_WARRIOR');
+        }
+    }
 
     // Consecutives
     let currentStreak = 0;
@@ -90,11 +102,17 @@ export async function processAchievements(
         }
     }
 
-    // Night Owl
+    // Night Owl / Early Bird / Lucky Drop
     if (actionContext?.isNewPoop) {
         const currentHour = new Date().getHours();
         if (currentHour >= 0 && currentHour <= 4) {
             await unlock('NIGHT_OWL');
+        } else if (currentHour >= 5 && currentHour <= 7) {
+            await unlock('EARLY_BIRD');
+        }
+
+        if (Math.random() < 0.01) { // 1% chance
+            await unlock('LUCKY_DROP');
         }
     }
 
@@ -113,6 +131,13 @@ export async function processAchievements(
 
     if (periodStarts.length > 0 && periodEnds.length > 0) {
         await unlock('RED_WEDDING');
+    }
+
+    // False Alarm
+    const startKeys = periodStarts.map(s => s.dateKey);
+    const falseAlarm = periodEnds.some(e => startKeys.includes(e.dateKey));
+    if (falseAlarm) {
+        await unlock('FALSE_ALARM');
     }
 
     // Shark Week (exactly 7 days period)
@@ -143,6 +168,18 @@ export async function processAchievements(
         const hasSync = partnerPoopDates.some(d => myDates.has(d));
         if (hasSync) {
             await unlock('SYNCHRONIZATION');
+        }
+
+        // Twinning
+        const today = new Date();
+        const todayKey = getDateKey(today.getFullYear(), today.getMonth(), today.getDate());
+        const myTodayRecord = poopRecords.find(r => r.dateKey === todayKey);
+        const partnerTodayRecord = partnerRecords.find(r => r.dateKey === todayKey);
+        
+        if (myTodayRecord && partnerTodayRecord && 
+            myTodayRecord.counterValue > 0 && 
+            myTodayRecord.counterValue === partnerTodayRecord.counterValue) {
+            await unlock('TWINNING');
         }
 
         const myStarts = periodStarts.map(r => r.dateKey);
