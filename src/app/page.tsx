@@ -8,6 +8,7 @@ import PartnerSetupModal from '@/components/PartnerSetupModal';
 import StatusBar from '@/components/StatusBar';
 import PushNotificationModal from '@/components/PushNotificationModal';
 import TrophyRoomModal from '@/components/TrophyRoomModal';
+import YakWrappedModal from '@/components/YakWrappedModal';
 import { ACHIEVEMENTS, AchievementCode } from '@/utils/achievementsData';
 import { useAuth, useUser, SignInButton, UserButton } from '@clerk/nextjs';
 import { dark } from '@clerk/themes';
@@ -32,6 +33,7 @@ export default function Home() {
     const [isPartnerSetupOpen, setIsPartnerSetupOpen] = useState(false);
     const [isNotificationModalOpen, setIsNotificationModalOpen] = useState(false);
     const [isTrophyRoomOpen, setIsTrophyRoomOpen] = useState(false);
+    const [isYakWrappedOpen, setIsYakWrappedOpen] = useState(false);
 
     // Initial selected date
     useEffect(() => {
@@ -108,6 +110,7 @@ export default function Home() {
                     >
                         <UserButton.MenuItems>
                             <UserButton.Action label="Push Notifications" labelIcon={<span className="mr-2">🔔</span>} onClick={() => setIsNotificationModalOpen(true)} />
+                            <UserButton.Action label="Yak Wrapped" labelIcon={<span className="mr-2">🎁</span>} onClick={() => setIsYakWrappedOpen(true)} />
                         </UserButton.MenuItems>
                     </UserButton>
                 </div>
@@ -317,6 +320,13 @@ export default function Home() {
                 isOpen={isTrophyRoomOpen}
                 onClose={() => setIsTrophyRoomOpen(false)}
                 partnerId={tracker.partnerId}
+            />
+
+            <YakWrappedModal
+                isOpen={isYakWrappedOpen}
+                onClose={() => setIsYakWrappedOpen(false)}
+                dailyCounts={tracker.dailyCounts}
+                dailyStatuses={tracker.dailyStatuses}
             />
 
             {/* Achievement Toasts */}
