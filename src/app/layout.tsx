@@ -30,8 +30,9 @@ export default function RootLayout({
     <html lang="en" className={`${spaceGrotesk.variable} h-full antialiased`}>
       <head>
         <link rel="manifest" href="/manifest.json" />
+        <link rel="preload" href="/images/loader.PNG" as="image" />
       </head>
-      <body className="min-h-full flex flex-col">
+      <body className="min-h-full flex flex-col animate-fade-in bg-black">
         <ClerkProvider>
           {children}
           <NotificationToaster />

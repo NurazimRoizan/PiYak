@@ -13,7 +13,7 @@ import { dark } from '@clerk/themes';
 const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
 export default function Home() {
-    const { userId } = useAuth();
+    const { isLoaded, userId } = useAuth();
     const { user: currentUser } = useUser();
     const tracker = useTracker();
     const currentUsername = currentUser?.username || currentUser?.firstName || "User";
@@ -57,7 +57,7 @@ export default function Home() {
         tracker.toggleStatus(selectedDate, action);
     };
 
-    if (tracker.isLoading && userId) {
+    if (!isLoaded || (tracker.isLoading && userId)) {
         return (
             <div className="fixed inset-0 bg-black z-[100] flex justify-center items-center">
                 <div className="relative w-full max-w-[500px] aspect-[9/16] max-h-screen">
