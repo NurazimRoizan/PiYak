@@ -90,15 +90,19 @@ export async function processAchievements(
         
         if (currentStreak >= 3) unlock('THE_REGULAR');
         if (currentStreak >= 7) unlock('IRON_BOWEL');
+        if (currentStreak >= 30) unlock('GOD_TIER');
     }
 
-    // Ghost Town (3 days without poop)
+    // Ghost Town & The Constipated
     if (poopCount > 0) {
         const lastPoopDate = new Date(poopRecords[poopCount - 1].dateKey);
         const today = new Date();
         const diffFromToday = (today.getTime() - lastPoopDate.getTime()) / (1000 * 3600 * 24);
         if (diffFromToday >= 3) {
             await unlock('GHOST_TOWN');
+        }
+        if (diffFromToday >= 7) {
+            await unlock('THE_CONSTIPATED');
         }
     }
 
@@ -111,7 +115,10 @@ export async function processAchievements(
             await unlock('EARLY_BIRD');
         }
 
-        if (Math.random() < 0.01) { // 1% chance
+        const roll = Math.random();
+        if (roll < 0.001) { // 0.1% chance
+            await unlock('GACHA_WHALE');
+        } else if (roll < 0.01) { // 1% chance
             await unlock('LUCKY_DROP');
         }
     }
@@ -140,13 +147,16 @@ export async function processAchievements(
         await unlock('FALSE_ALARM');
     }
 
-    // Shark Week (exactly 7 days period)
+    // Shark Week & Bloodbath
     for (const start of periodStarts) {
         const end = periodEnds.find(e => new Date(e.dateKey) > new Date(start.dateKey));
         if (end) {
             const days = (new Date(end.dateKey).getTime() - new Date(start.dateKey).getTime()) / (1000 * 3600 * 24) + 1;
             if (days === 7) {
                 await unlock('SHARK_WEEK');
+            }
+            if (days >= 10) {
+                await unlock('BLOODBATH');
             }
         }
     }
@@ -168,18 +178,6 @@ export async function processAchievements(
         const hasSync = partnerPoopDates.some(d => myDates.has(d));
         if (hasSync) {
             await unlock('SYNCHRONIZATION');
-        }
-
-        // Twinning
-        const today = new Date();
-        const todayKey = getDateKey(today.getFullYear(), today.getMonth(), today.getDate());
-        const myTodayRecord = poopRecords.find(r => r.dateKey === todayKey);
-        const partnerTodayRecord = partnerRecords.find(r => r.dateKey === todayKey);
-        
-        if (myTodayRecord && partnerTodayRecord && 
-            myTodayRecord.counterValue > 0 && 
-            myTodayRecord.counterValue === partnerTodayRecord.counterValue) {
-            await unlock('TWINNING');
         }
 
         const myStarts = periodStarts.map(r => r.dateKey);
