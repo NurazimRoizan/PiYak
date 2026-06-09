@@ -18,7 +18,9 @@ export function useTracker() {
     const [dailyCounts, setDailyCounts] = useState<Record<string, number>>({});
     const [dailyStatuses, setDailyStatuses] = useState<Record<string, string>>({});
     
-    const [isLoading, setIsLoading] = useState(true);
+    const [isPartnerLoading, setIsPartnerLoading] = useState(true);
+    const [isDataLoading, setIsDataLoading] = useState(true);
+    const isLoading = isPartnerLoading || isDataLoading;
     const [isPartnerView, setIsPartnerView] = useState(false);
 
     const [partnerUsername, setPartnerUsername] = useState<string | null>(null);
@@ -52,7 +54,7 @@ export function useTracker() {
             } catch (err) {
                 console.error("Failed to fetch partner info", err);
             } finally {
-                setIsLoading(false);
+                setIsPartnerLoading(false);
             }
         };
 
@@ -61,7 +63,7 @@ export function useTracker() {
 
     const fetchDailyData = useCallback(async (activePartnerId?: string) => {
         if (!userId) return;
-        setIsLoading(true);
+        setIsDataLoading(true);
         
         try {
             let url = '/api/tracker';
@@ -89,20 +91,22 @@ export function useTracker() {
             setDailyCounts({});
             setDailyStatuses({});
         } finally {
-            setIsLoading(false);
+            setIsDataLoading(false);
         }
     }, [userId]);
 
-    // Fetch data when userId or partner view changes
+    const activePartnerId = isPartnerView && partnerId ? partnerId : undefined;
+
+    // Fetch data when userId or activePartnerId changes
     useEffect(() => {
         if (userId) {
-            const activePartnerId = isPartnerView && partnerId ? partnerId : undefined;
             fetchDailyData(activePartnerId);
         } else {
             setDailyCounts({});
             setDailyStatuses({});
+            setIsDataLoading(false);
         }
-    }, [userId, partnerId, isPartnerView, fetchDailyData]);
+    }, [userId, activePartnerId, fetchDailyData]);
 
     const submitData = async (dateKey: string, count: number, status: string | null) => {
         if (!userId) return;
