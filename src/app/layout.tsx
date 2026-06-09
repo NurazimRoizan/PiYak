@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Space_Grotesk } from "next/font/google";
 import { ClerkProvider } from '@clerk/nextjs'
+import { dark } from '@clerk/themes'
 import "./globals.css";
 
 const spaceGrotesk = Space_Grotesk({
@@ -33,7 +34,7 @@ export default function RootLayout({
         <link rel="preload" href="/images/loader.PNG" as="image" />
       </head>
       <body className="min-h-full flex flex-col animate-fade-in bg-black">
-        <ClerkProvider>
+        <ClerkProvider appearance={{ baseTheme: dark }}>
           {children}
           <NotificationToaster />
         </ClerkProvider>
