@@ -23,9 +23,11 @@ export default function YakWrappedModal({ isOpen, onClose, dailyCounts, dailySta
 
     const stats = useMemo(() => {
         const today = new Date();
-        const currentYear = today.getFullYear();
-        const currentMonth = today.getMonth();
-        const monthName = monthNames[currentMonth];
+        // Calculate for the previous month
+        const targetDate = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+        const targetYear = targetDate.getFullYear();
+        const targetMonth = targetDate.getMonth();
+        const monthName = monthNames[targetMonth];
         
         let totalPoops = 0;
         const dayCounts = [0, 0, 0, 0, 0, 0, 0];
@@ -35,7 +37,7 @@ export default function YakWrappedModal({ isOpen, onClose, dailyCounts, dailySta
 
         Object.entries(dailyCounts).forEach(([dateStr, count]) => {
             const d = new Date(dateStr);
-            if (d.getFullYear() === currentYear && d.getMonth() === currentMonth) {
+            if (d.getFullYear() === targetYear && d.getMonth() === targetMonth) {
                 totalPoops += count;
                 dayCounts[d.getUTCDay()] += count;
                 if (count > 0) activePoopDays++;
@@ -45,7 +47,7 @@ export default function YakWrappedModal({ isOpen, onClose, dailyCounts, dailySta
 
         Object.entries(dailyStatuses).forEach(([dateStr, status]) => {
             const d = new Date(dateStr);
-            if (d.getFullYear() === currentYear && d.getMonth() === currentMonth) {
+            if (d.getFullYear() === targetYear && d.getMonth() === targetMonth) {
                 if (['start', 'flow', 'end'].includes(status)) {
                     totalPeriodDays += 1;
                 }
@@ -60,15 +62,27 @@ export default function YakWrappedModal({ isOpen, onClose, dailyCounts, dailySta
         }
 
         const estimatedHours = (totalPoops * 12) / 60; // 12 mins per poop
-        const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+        const daysInMonth = new Date(targetYear, targetMonth + 1, 0).getDate();
         const zeroDays = daysInMonth - activePoopDays;
 
-        let animal = '';
-        if (totalPoops === 0) animal = 'A Ghost 👻. Are you even real?';
-        else if (totalPoops <= 5) animal = 'A Sloth 🦥. Barely moving at all.';
-        else if (totalPoops <= 15) animal = 'A Domestic Cat 🐈. Respectable, clean, average.';
-        else if (totalPoops <= 30) animal = 'A Hippopotamus 🦛. A true force of nature! Keep it up!';
-        else animal = 'A Blue Whale 🐋. Unfathomable payload volume.';
+        let statusTitle = '';
+        let statusDesc = '';
+        if (totalPoops === 0) {
+            statusTitle = 'ETHEREAL ENTITY';
+            statusDesc = 'Holding onto earthly matter with a terrifying, iron grip.';
+        } else if (totalPoops <= 5) {
+            statusTitle = 'DORMANT VOLCANO';
+            statusDesc = 'Barely participating in the global carbon cycle.';
+        } else if (totalPoops <= 15) {
+            statusTitle = 'FACTORY SETTINGS';
+            statusDesc = 'A perfectly average meat-sack fulfilling its biological quota.';
+        } else if (totalPoops <= 30) {
+            statusTitle = 'GRAVITY DISTORTION';
+            statusDesc = 'Shedding mass at an alarming velocity. You are a biological hazard.';
+        } else {
+            statusTitle = 'PRIMORDIAL CHAOS';
+            statusDesc = 'Local plumbing infrastructure weeps at your approach.';
+        }
 
         return {
             monthName,
@@ -78,7 +92,8 @@ export default function YakWrappedModal({ isOpen, onClose, dailyCounts, dailySta
             totalPeriodDays,
             zeroDays,
             doubleDropDays,
-            animal
+            statusTitle,
+            statusDesc
         };
     }, [dailyCounts, dailyStatuses]);
 
@@ -103,7 +118,7 @@ export default function YakWrappedModal({ isOpen, onClose, dailyCounts, dailySta
             content: `You dropped ${stats.totalPoops} payloads this month!`,
             icon: "💩",
             textColor: "text-black",
-            subtext: `That is equivalent to ${stats.animal}`
+            subtext: `STATUS: ${stats.statusTitle}. ${stats.statusDesc}`
         },
         {
             title: "FAVORITE DAY",
