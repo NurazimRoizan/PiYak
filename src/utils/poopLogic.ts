@@ -22,11 +22,25 @@ export function calculatePoopStreak(today: Date, dailyCounts: Record<string, num
 }
 
 export function getPoopStatusMessage(streak: number, countToday: number): string {
+    const randomItem = (arr: string[]) => arr[Math.floor(Math.random() * arr.length)];
+
     if (streak > 2) {
-        return `You are on the roll !! ${streak} days streak !!`;
+        return randomItem([
+            `${streak} DAYS OWNING THE TOILET.`,
+            `${streak} DAYS RULING THE BATHROOM.`,
+            `THE BOSS IS ON A ${streak} DAY STREAK.`
+        ]);
     } else if (countToday >= 1) {
-        return "Bowel movement doing great today !";
+        return randomItem([
+            "YOU DESTROYED THE TOILET. BOSS MOVE.",
+            "THE THRONE HAS BEEN CONQUERED.",
+            "BATHROOM DOMINATION SUCCESSFUL."
+        ]);
     } else {
-        return "Poopie time !!";
+        return randomItem([
+            "THE TOILET IS WAITING FOR THE BOSS.",
+            "CLAIM YOUR SEAT. THE BATHROOM IS YOURS.",
+            "THE THRONE IS EMPTY. GO DO DAMAGE."
+        ]);
     }
 }
