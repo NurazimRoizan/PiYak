@@ -16,31 +16,36 @@ const slideColors = [
 ];
 
 const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
 export default function YakWrappedModal({ isOpen, onClose, dailyCounts, dailyStatuses }: YakWrappedModalProps) {
     const [currentSlide, setCurrentSlide] = useState(0);
 
     const stats = useMemo(() => {
-        // We will calculate stats for the current year/month. 
-        // For simplicity, we just calculate all-time stats for the current year, or we can filter by the last 30 days.
-        // Let's do current year to match "You dropped X payloads this year!"
-        const currentYear = new Date().getFullYear();
+        const today = new Date();
+        const currentYear = today.getFullYear();
+        const currentMonth = today.getMonth();
+        const monthName = monthNames[currentMonth];
         
         let totalPoops = 0;
         const dayCounts = [0, 0, 0, 0, 0, 0, 0];
         let totalPeriodDays = 0;
+        let activePoopDays = 0;
+        let doubleDropDays = 0;
 
         Object.entries(dailyCounts).forEach(([dateStr, count]) => {
             const d = new Date(dateStr);
-            if (d.getFullYear() === currentYear) {
+            if (d.getFullYear() === currentYear && d.getMonth() === currentMonth) {
                 totalPoops += count;
                 dayCounts[d.getUTCDay()] += count;
+                if (count > 0) activePoopDays++;
+                if (count >= 2) doubleDropDays++;
             }
         });
 
         Object.entries(dailyStatuses).forEach(([dateStr, status]) => {
             const d = new Date(dateStr);
-            if (d.getFullYear() === currentYear) {
+            if (d.getFullYear() === currentYear && d.getMonth() === currentMonth) {
                 if (['start', 'flow', 'end'].includes(status)) {
                     totalPeriodDays += 1;
                 }
@@ -55,12 +60,25 @@ export default function YakWrappedModal({ isOpen, onClose, dailyCounts, dailySta
         }
 
         const estimatedHours = (totalPoops * 12) / 60; // 12 mins per poop
+        const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+        const zeroDays = daysInMonth - activePoopDays;
+
+        let animal = '';
+        if (totalPoops === 0) animal = 'A Ghost 👻. Are you even real?';
+        else if (totalPoops <= 5) animal = 'A Sloth 🦥. Barely moving at all.';
+        else if (totalPoops <= 15) animal = 'A Domestic Cat 🐈. Respectable, clean, average.';
+        else if (totalPoops <= 30) animal = 'A Hippopotamus 🦛. A true force of nature! Keep it up!';
+        else animal = 'A Blue Whale 🐋. Unfathomable payload volume.';
 
         return {
+            monthName,
             totalPoops,
             favoriteDay: dayNames[maxDayIdx],
             estimatedHours: estimatedHours.toFixed(1),
-            totalPeriodDays
+            totalPeriodDays,
+            zeroDays,
+            doubleDropDays,
+            animal
         };
     }, [dailyCounts, dailyStatuses]);
 
@@ -76,15 +94,16 @@ export default function YakWrappedModal({ isOpen, onClose, dailyCounts, dailySta
     const slides = [
         {
             title: "YAK WRAPPED",
-            content: `Your ${new Date().getFullYear()} Recap is here.`,
+            content: `Your ${stats.monthName} Recap is here.`,
             icon: "🎁",
             textColor: "text-white"
         },
         {
             title: "PAYLOADS DROPPED",
-            content: `You dropped ${stats.totalPoops} payloads this year!`,
+            content: `You dropped ${stats.totalPoops} payloads this month!`,
             icon: "💩",
-            textColor: "text-black"
+            textColor: "text-black",
+            subtext: `That is equivalent to ${stats.animal}`
         },
         {
             title: "FAVORITE DAY",
@@ -97,22 +116,40 @@ export default function YakWrappedModal({ isOpen, onClose, dailyCounts, dailySta
             content: `You spent an estimated ${stats.estimatedHours} hours on the toilet.`,
             icon: "⏳",
             textColor: "text-black",
-            subtext: "(Assuming 12 mins per drop. We don't actually track your time. We respect your privacy.)"
+            subtext: "(Assuming 12 mins per drop. Your boss would be proud.)"
+        },
+        {
+            title: "TITANIUM BOWELS",
+            content: `You held it in for ${stats.zeroDays} days this month.`,
+            icon: "🧱",
+            textColor: "text-white",
+            subtext: "Your sphincter control is terrifying."
         }
     ];
+
+    if (stats.doubleDropDays > 0) {
+        slides.push({
+            title: "OVERDRIVE MODE",
+            content: `You went 2+ times on ${stats.doubleDropDays} different days!`,
+            icon: "🚀",
+            textColor: "text-black",
+            subtext: "Maximum efficiency achieved."
+        });
+    }
 
     if (stats.totalPeriodDays > 0) {
         slides.push({
             title: "CRIMSON TIDE",
             content: `You spent ${stats.totalPeriodDays} days on your period.`,
             icon: "🩸",
-            textColor: "text-black"
+            textColor: "text-white",
+            subtext: "You survived the red wedding."
         });
     }
 
     slides.push({
         title: "YOU SURVIVED.",
-        content: "See you next year.",
+        content: "See you next month.",
         icon: "👑",
         textColor: "text-black"
     });
@@ -159,7 +196,7 @@ export default function YakWrappedModal({ isOpen, onClose, dailyCounts, dailySta
                         {slide.icon}
                     </div>
                     
-                    <h2 className={`text-4xl font-extrabold uppercase tracking-widest mb-6 ${slide.textColor} drop-shadow-[2px_2px_0_rgba(255,255,255,1)]`}>
+                    <h2 className={`text-4xl font-extrabold uppercase tracking-widest mb-6 ${slide.textColor} drop-shadow-[2px_2px_0_rgba(0,0,0,1)]`}>
                         {slide.title}
                     </h2>
                     
@@ -168,7 +205,7 @@ export default function YakWrappedModal({ isOpen, onClose, dailyCounts, dailySta
                     </p>
 
                     {slide.subtext && (
-                        <p className={`text-xs font-bold mt-6 ${slide.textColor} opacity-80 uppercase`}>
+                        <p className={`text-sm font-bold mt-6 ${slide.textColor} opacity-90 uppercase`}>
                             {slide.subtext}
                         </p>
                     )}
