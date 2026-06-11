@@ -10,8 +10,36 @@ const spaceGrotesk = Space_Grotesk({
 });
 
 export const metadata: Metadata = {
-  title: "PiYak - Poop & Period Tracker",
-  description: "Track your poops and periods with style.",
+  metadataBase: new URL("https://piyak.jimiroi.com"),
+  title: "PiYak - Poop & Period Tracker for Couples",
+  description: "The ultimate brutalist-style daily tracker for couples. Safely sync, track, and snoop on your partner's poops and periods with real-time push notifications.",
+  keywords: ["poop tracker", "period tracker", "couples app", "piyak", "habit tracker", "health"],
+  authors: [{ name: "PiYak Team" }],
+  alternates: {
+    canonical: '/',
+  },
+  openGraph: {
+    title: "PiYak - Poop & Period Tracker",
+    description: "Track your poops and periods with style. Sync with your partner and get instant notifications!",
+    url: "https://piyak.jimiroi.com",
+    siteName: "PiYak",
+    images: [
+      {
+        url: "/images/icon-192x192.png",
+        width: 192,
+        height: 192,
+        alt: "PiYak Logo",
+      },
+    ],
+    locale: "en_US",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "PiYak - Poop & Period Tracker",
+    description: "The ultimate brutalist-style daily tracker for couples.",
+    images: ["/images/icon-192x192.png"],
+  },
   manifest: "/manifest.json",
   icons: {
     icon: "/images/icon-192x192.png",
