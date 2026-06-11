@@ -23,6 +23,15 @@ export function calculatePoopStreak(today: Date, dailyCounts: Record<string, num
 
 export function getPoopStatusMessage(streak: number, countToday: number): string {
     const randomItem = (arr: string[]) => arr[Math.floor(Math.random() * arr.length)];
+    const todayDate = new Date().getDate();
+
+    if ([6, 7, 16, 17, 26, 27].includes(todayDate)) {
+        return randomItem([
+            `IT'S THE ${todayDate}TH. SIX... SEVEN... DOOT DOOT! *WEIRD HAND GESTURES*`,
+            `*JUGGLING HANDS* SIX... SEVEN... DOOT DOOT 6 7!`,
+            `SKIBIDI TOILET? NO. IT'S THE ${todayDate}TH. DOOT DOOT 6 7! *WEIRD GESTURES*`
+        ]);
+    }
 
     if (streak === 3) {
         return randomItem([
