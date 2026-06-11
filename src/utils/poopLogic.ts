@@ -24,7 +24,26 @@ export function calculatePoopStreak(today: Date, dailyCounts: Record<string, num
 export function getPoopStatusMessage(streak: number, countToday: number): string {
     const randomItem = (arr: string[]) => arr[Math.floor(Math.random() * arr.length)];
 
-    if (streak > 2) {
+    if (streak === 3) {
+        return randomItem([
+            "A 3-DAY HAT TRICK. THE TOILET IS BEGGING FOR MERCY.",
+            "3 DAYS IN A ROW. YOU ARE JUST WARMING UP."
+        ]);
+    } else if (streak === 4) {
+        return randomItem([
+            "4 DAYS STRAIGHT. PLUMBING INTEGRITY IS COMPROMISED.",
+            "DAY 4. THE PORCELAIN GODS WEEP."
+        ]);
+    } else if (streak === 5) {
+        return randomItem([
+            "5 DAYS PENTAKILL. YOU ARE A BIOLOGICAL WEAPON.",
+            "DAY 5. MANAGEMENT IS TERRIFIED OF YOUR EFFICIENCY."
+        ]);
+    } else if (streak === 6) {
+        return "6 DAYS STRAIGHT. WHY WAS 6 AFRAID OF 7? BECAUSE 7 POOPED 9 TIMES.";
+    } else if (streak === 7) {
+        return "7 DAYS! YOU KNOW WHY 7 8 9? BECAUSE YOU ATE TOO MUCH TACO BELL.";
+    } else if (streak > 7) {
         return randomItem([
             `${streak} DAYS OWNING THE TOILET.`,
             `${streak} DAYS RULING THE BATHROOM.`,
