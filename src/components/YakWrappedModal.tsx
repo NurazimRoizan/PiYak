@@ -118,7 +118,8 @@ export default function YakWrappedModal({ isOpen, onClose, dailyCounts, dailySta
             content: `You dropped ${stats.totalPoops} payloads this month!`,
             icon: "💩",
             textColor: "text-black",
-            subtext: `STATUS: ${stats.statusTitle}. ${stats.statusDesc}`
+            sticker: `STATUS: ${stats.statusTitle}`,
+            subtext: stats.statusDesc
         },
         {
             title: "FAVORITE DAY",
@@ -219,8 +220,14 @@ export default function YakWrappedModal({ isOpen, onClose, dailyCounts, dailySta
                         {slide.content}
                     </p>
 
+                    {slide.sticker && (
+                        <div className="mt-6 bg-white text-black font-extrabold uppercase px-3 py-1 border-4 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] rotate-[-3deg] text-sm">
+                            {slide.sticker}
+                        </div>
+                    )}
+
                     {slide.subtext && (
-                        <p className={`text-sm font-bold mt-6 ${slide.textColor} opacity-90 uppercase`}>
+                        <p className={`text-sm font-bold mt-4 ${slide.textColor} opacity-90 uppercase px-4`}>
                             {slide.subtext}
                         </p>
                     )}
