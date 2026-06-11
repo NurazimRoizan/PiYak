@@ -40,9 +40,9 @@ export function getPoopStatusMessage(streak: number, countToday: number): string
             "DAY 5. MANAGEMENT IS TERRIFIED OF YOUR EFFICIENCY."
         ]);
     } else if (streak === 6) {
-        return "DAY 6. WHY WAS 6 AFRAID OF 7?";
+        return "DAY 6. SIX... *WEIRD JUGGLING HAND GESTURES*";
     } else if (streak === 7) {
-        return "DAY 7. BECAUSE 7 IS A REGISTERED 6 OFFENDER.";
+        return "DAY 7. SEVEN. DOOT DOOT 6 7! *WEIRD HAND GESTURES*";
     } else if (streak > 7) {
         return randomItem([
             `${streak} DAYS OWNING THE TOILET.`,
