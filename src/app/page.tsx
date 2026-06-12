@@ -7,6 +7,9 @@ import PeriodSetupModal from '@/components/PeriodSetupModal';
 import PartnerSetupModal from '@/components/PartnerSetupModal';
 import StatusBar from '@/components/StatusBar';
 import PushNotificationModal from '@/components/PushNotificationModal';
+import TrophyRoomModal from '@/components/TrophyRoomModal';
+import YakWrappedModal from '@/components/YakWrappedModal';
+import { ACHIEVEMENTS, AchievementCode } from '@/utils/achievementsData';
 import { useAuth, useUser, SignInButton, UserButton } from '@clerk/nextjs';
 import { dark } from '@clerk/themes';
 
@@ -29,6 +32,8 @@ export default function Home() {
     const [isPeriodSetupOpen, setIsPeriodSetupOpen] = useState(false);
     const [isPartnerSetupOpen, setIsPartnerSetupOpen] = useState(false);
     const [isNotificationModalOpen, setIsNotificationModalOpen] = useState(false);
+    const [isTrophyRoomOpen, setIsTrophyRoomOpen] = useState(false);
+    const [isYakWrappedOpen, setIsYakWrappedOpen] = useState(false);
 
     // Initial selected date
     useEffect(() => {
@@ -105,6 +110,7 @@ export default function Home() {
                     >
                         <UserButton.MenuItems>
                             <UserButton.Action label="Push Notifications" labelIcon={<span className="mr-2">🔔</span>} onClick={() => setIsNotificationModalOpen(true)} />
+                            <UserButton.Action label="Yak Wrapped" labelIcon={<span className="mr-2">🎁</span>} onClick={() => setIsYakWrappedOpen(true)} />
                         </UserButton.MenuItems>
                     </UserButton>
                 </div>
@@ -131,6 +137,14 @@ export default function Home() {
                             className="px-4 py-2 bg-piyak-highlight text-black border-4 border-white shadow-[4px_4px_0_0_#fff] hover:-translate-y-1 hover:shadow-[6px_6px_0_0_#fff] active:translate-x-1 active:translate-y-1 active:shadow-none font-bold uppercase transition-all"
                         >
                             Switch to {tracker.appMode === 'period' ? 'POOP' : 'BLOOD'}
+                        </button>
+                        
+                        <button 
+                            onClick={() => setIsTrophyRoomOpen(true)}
+                            className="px-4 py-2 bg-black text-white border-4 border-white shadow-[4px_4px_0_0_#FFFF00] hover:-translate-y-1 hover:shadow-[6px_6px_0_0_#FFFF00] active:translate-x-1 active:translate-y-1 active:shadow-none font-bold uppercase transition-all text-xl"
+                            title="Trophy Room"
+                        >
+                            🏆
                         </button>
                         
                         {tracker.appMode === 'period' && (
@@ -301,6 +315,43 @@ export default function Home() {
                 isOpen={isNotificationModalOpen}
                 onClose={() => setIsNotificationModalOpen(false)}
             />
+
+            <TrophyRoomModal
+                isOpen={isTrophyRoomOpen}
+                onClose={() => setIsTrophyRoomOpen(false)}
+                partnerId={tracker.partnerId}
+            />
+
+            <YakWrappedModal
+                isOpen={isYakWrappedOpen}
+                onClose={() => setIsYakWrappedOpen(false)}
+                dailyCounts={tracker.dailyCounts}
+                dailyStatuses={tracker.dailyStatuses}
+            />
+
+            {/* Achievement Toasts */}
+            {tracker.latestAchievements.length > 0 && (
+                <div className="fixed bottom-4 right-4 z-[300] flex flex-col gap-2">
+                    {tracker.latestAchievements.map((code, idx) => {
+                        const ach = ACHIEVEMENTS[code as AchievementCode];
+                        return (
+                            <div key={idx} className="bg-black border-4 border-white p-4 shadow-[8px_8px_0_0_#FF00FF] flex items-center gap-4 animate-bounce">
+                                <div className="text-4xl">{ach?.icon || '🏆'}</div>
+                                <div>
+                                    <h4 className="text-white font-extrabold uppercase text-sm">Achievement Unlocked!</h4>
+                                    <p className="text-piyak-highlight font-bold">{ach?.title || code}</p>
+                                </div>
+                                <button 
+                                    onClick={() => tracker.clearLatestAchievements()}
+                                    className="ml-auto text-white hover:text-[#FF00FF] font-bold text-xl px-2"
+                                >
+                                    ✕
+                                </button>
+                            </div>
+                        );
+                    })}
+                </div>
+            )}
         </div>
     );
 }
