@@ -19,31 +19,9 @@ PiYak is a highly unhinged, neo-brutalist Progressive Web App (PWA) designed to 
 - **Authentication**: [Clerk](https://clerk.com)
 - **Notifications**: Web Push API & Vercel Cron Jobs
 
-## Getting Started
+## Play Now
 
-First, install dependencies:
-
-```bash
-npm install
-```
-
-Set up your `.env` file with your Clerk keys and Postgres URL. Then, push the schema:
-
-```bash
-npx prisma db push
-```
-
-Run the development server:
-
-```bash
-npm run dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-## Deploy on Vercel
-
-The easiest way to deploy PiYak is to use the [Vercel Platform](https://vercel.com/new). Make sure to configure the `CRON_SECRET` environment variable for the automated Yak Wrapped push notifications.
+Start tracking your bodily functions at [piyak.jimiroi.com](https://piyak.jimiroi.com).
 
 ---
 *PiYak: Because your bathroom habits deserve to be gamified.*
