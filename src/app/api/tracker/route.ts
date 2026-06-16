@@ -52,7 +52,7 @@ export async function POST(request: Request) {
 
     try {
         const body = await request.json();
-        const { date, count, status, partnerId } = body;
+        const { date, count, status, partnerId, localHour } = body;
         
         if (partnerId && partnerId !== userId) {
             return new NextResponse("Forbidden: Cannot modify partner's data", { status: 403 });
@@ -159,7 +159,8 @@ export async function POST(request: Request) {
                     isNewPoop: count > (previousRecord?.counterValue || 0),
                     isMistake: count < (previousRecord?.counterValue || 0),
                     isPeriodStart: status === 'start',
-                    isPeriodEnd: status === 'end'
+                    isPeriodEnd: status === 'end',
+                    localHour: typeof localHour === 'number' ? localHour : undefined
                 }
             );
         }

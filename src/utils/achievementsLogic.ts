@@ -13,6 +13,7 @@ export async function processAchievements(
         isPeriodStart?: boolean;
         isPeriodEnd?: boolean;
         isPartnerConnected?: boolean;
+        localHour?: number;
     }
 ): Promise<string[]> {
     const newlyUnlocked: string[] = [];
@@ -108,7 +109,7 @@ export async function processAchievements(
 
     // Night Owl / Early Bird / Lucky Drop
     if (actionContext?.isNewPoop) {
-        const currentHour = new Date().getHours();
+        const currentHour = actionContext.localHour !== undefined ? actionContext.localHour : new Date().getHours();
         if (currentHour >= 0 && currentHour <= 4) {
             await unlock('NIGHT_OWL');
         } else if (currentHour >= 5 && currentHour <= 7) {

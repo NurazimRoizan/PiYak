@@ -113,7 +113,12 @@ export function useTracker() {
         if (!userId) return;
 
         try {
-            const body: any = { date: dateKey, count, status };
+            const body: any = { 
+                date: dateKey, 
+                count, 
+                status,
+                localHour: new Date().getHours() 
+            };
             if (isPartnerView && partnerId) {
                 body.partnerId = partnerId;
             }
