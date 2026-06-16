@@ -9,18 +9,25 @@ const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
 });
 
+export const viewport = {
+  themeColor: "#000000",
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+};
+
 export const metadata: Metadata = {
   metadataBase: new URL("https://piyak.jimiroi.com"),
-  title: "PiYak - Poop & Period Tracker for Couples",
-  description: "The ultimate brutalist-style daily tracker for couples. Safely sync, track, and snoop on your partner's poops and periods with real-time push notifications.",
-  keywords: ["poop tracker", "period tracker", "couples app", "piyak", "habit tracker", "health"],
+  title: "PiYak | Gamified Poop & Period Tracker for Couples",
+  description: "The most unhinged, brutalist daily tracker. Sync your poops, track your periods, earn wild achievements, and get judged by a sentient Toilet Boss.",
+  keywords: ["poop tracker", "period tracker", "couples tracker", "habit tracker", "neo-brutalist app", "funny tracker app", "piyak", "health gamification", "bowel movement tracker", "menstrual cycle tracker"],
   authors: [{ name: "PiYak Team" }],
   alternates: {
     canonical: '/',
   },
   openGraph: {
-    title: "PiYak - Poop & Period Tracker",
-    description: "Track your poops and periods with style. Sync with your partner and get instant notifications!",
+    title: "PiYak | Gamified Poop & Period Tracker",
+    description: "Track your bodily functions. Sync with your partner. Earn wild achievements. The ultimate unhinged daily tracker.",
     url: "https://piyak.jimiroi.com",
     siteName: "PiYak",
     images: [
@@ -28,16 +35,16 @@ export const metadata: Metadata = {
         url: "/images/icon-192x192.png",
         width: 192,
         height: 192,
-        alt: "PiYak Logo",
+        alt: "PiYak App Icon",
       },
     ],
     locale: "en_US",
     type: "website",
   },
   twitter: {
-    card: "summary_large_image",
-    title: "PiYak - Poop & Period Tracker",
-    description: "The ultimate brutalist-style daily tracker for couples.",
+    card: "summary",
+    title: "PiYak | Gamified Poop & Period Tracker",
+    description: "Track your bodily functions. Sync with your partner. Earn wild achievements. The ultimate unhinged daily tracker.",
     images: ["/images/icon-192x192.png"],
   },
   manifest: "/manifest.json",
@@ -45,7 +52,6 @@ export const metadata: Metadata = {
     icon: "/images/icon-192x192.png",
     apple: "/images/icon-192x192.png",
   },
-  themeColor: "#000000",
 };
 
 import NotificationToaster from "@/components/NotificationToaster";
