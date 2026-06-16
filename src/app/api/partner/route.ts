@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { auth, clerkClient } from '@clerk/nextjs/server';
 import { PrismaClient } from '@prisma/client';
 import crypto from 'crypto';
+import { processAchievements } from '@/utils/achievementsLogic';
 
 const prisma = new PrismaClient();
 
@@ -93,12 +94,15 @@ export async function POST(request: Request) {
         }
 
         // Set current user's partnerId to the target user's ID
-        await prisma.user.update({
+        const updatedUser = await prisma.user.update({
             where: { id: userId },
             data: { partnerId: targetUser.id }
         });
 
-        return NextResponse.json({ success: true, partnerId: targetUser.id });
+        const allRecords = await prisma.dailyRecord.findMany({ where: { userId } });
+        const newlyUnlocked = await processAchievements(userId, prisma, allRecords, updatedUser, { isPartnerConnected: true });
+
+        return NextResponse.json({ success: true, partnerId: targetUser.id, newlyUnlocked });
     } catch (e: any) {
         console.error(e);
         return NextResponse.json({ error: e.message }, { status: 500 });

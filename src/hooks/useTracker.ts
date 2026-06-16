@@ -22,6 +22,7 @@ export function useTracker() {
     const [isDataLoading, setIsDataLoading] = useState(true);
     const isLoading = isPartnerLoading || isDataLoading;
     const [isPartnerView, setIsPartnerView] = useState(false);
+    const [latestAchievements, setLatestAchievements] = useState<string[]>([]);
 
     const [partnerUsername, setPartnerUsername] = useState<string | null>(null);
     const [partnerImageUrl, setPartnerImageUrl] = useState<string | null>(null);
@@ -112,18 +113,27 @@ export function useTracker() {
         if (!userId) return;
 
         try {
-            const body: any = { date: dateKey, count, status };
+            const body: any = { 
+                date: dateKey, 
+                count, 
+                status,
+                localHour: new Date().getHours() 
+            };
             if (isPartnerView && partnerId) {
                 body.partnerId = partnerId;
             }
 
-            await fetch('/api/tracker', {
+            const res = await fetch('/api/tracker', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify(body)
             });
+            const data = await res.json();
+            if (data.newlyUnlocked?.length > 0) {
+                setLatestAchievements(prev => [...prev, ...data.newlyUnlocked]);
+            }
         } catch (error) {
             console.error('Submission failed:', error);
         }
@@ -243,6 +253,9 @@ export function useTracker() {
             }
             
             setPartnerId(data.partnerId);
+            if (data.newlyUnlocked?.length > 0) {
+                setLatestAchievements(prev => [...prev, ...data.newlyUnlocked]);
+            }
             return true;
         } catch (error) {
             console.error("Connect error", error);
@@ -291,6 +304,8 @@ export function useTracker() {
         disconnectPartner,
         togglePartnerView,
         toggleAppMode,
-        toggleStatus
+        toggleStatus,
+        latestAchievements,
+        clearLatestAchievements: () => setLatestAchievements([])
     };
 }
