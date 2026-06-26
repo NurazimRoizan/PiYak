@@ -1,4 +1,4 @@
-const CACHE_NAME = 'piyak-cache-v7';
+const CACHE_NAME = 'piyak-cache-v8';
 const urlsToCache = [
     '/',
     '/manifest.json',
@@ -19,23 +19,36 @@ self.addEventListener('install', (event) => {
 
 // Fetch event: Intercepts network requests and serves cached assets first
 self.addEventListener('fetch', (event) => {
-    // Only intercept requests for files we can cache
-    if (urlsToCache.includes(event.request.url.replace(location.origin, '.'))) {
-        event.respondWith(
-            caches.match(event.request)
-                .then((response) => {
-                    // Cache hit - return response
-                    if (response) {
-                        return response;
-                    }
-                    // No cache match - fetch from network
-                    return fetch(event.request);
-                })
-        );
-    } else {
-        // For external resources (like Google Fonts or Apps Script), fetch them normally
-        return fetch(event.request);
+    // Skip cross-origin requests, API routes, Clerk routes, and Next.js internals
+    const url = new URL(event.request.url);
+    if (
+        url.origin !== location.origin ||
+        url.pathname.startsWith('/api/') ||
+        url.pathname.startsWith('/__clerk/') ||
+        url.pathname.startsWith('/_next/')
+    ) {
+        return; // Let the browser handle these normally (no event.respondWith)
     }
+
+    event.respondWith(
+        caches.match(event.request)
+            .then((response) => {
+                // Cache hit - return response
+                if (response) {
+                    return response;
+                }
+                
+                // No cache match - fetch from network
+                return fetch(event.request).then(networkResponse => {
+                    // Optional: You can dynamically cache new pages here if you want,
+                    // but for now we just return the network response.
+                    return networkResponse;
+                }).catch(() => {
+                    // If network fails and it's a navigation request, we could return a fallback
+                    // But for now just let it fail gracefully
+                });
+            })
+    );
 });
 
 // Activate event: Clears out old caches
