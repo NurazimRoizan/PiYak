@@ -99,6 +99,22 @@ export async function POST(request: Request) {
             data: { partnerId: targetUser.id }
         });
 
+        // Feature: Centralized Discord Notifications & Geo-Stalker
+        try {
+            fetch("https://api.jimiroi.com/track", {
+                method: "POST",
+                headers: { 
+                    "Content-Type": "application/json",
+                    "x-vercel-ip-country": request.headers.get("x-vercel-ip-country") || "",
+                    "x-vercel-ip-city": request.headers.get("x-vercel-ip-city") || "",
+                    "user-agent": request.headers.get("user-agent") || ""
+                },
+                body: JSON.stringify({ event: "partner_linked", project: "PiYak" })
+            }).catch(e => console.error(e));
+        } catch (e) {
+            console.error("Failed to ping jimiroi-api:", e);
+        }
+
         const allRecords = await prisma.dailyRecord.findMany({ where: { userId } });
         const newlyUnlocked = await processAchievements(userId, prisma, allRecords, updatedUser, { isPartnerConnected: true });
 
