@@ -82,14 +82,70 @@ export default function Home() {
 
     if (!userId) {
         return (
-            <div className="w-[calc(100%-56px)] max-w-[700px] mx-auto p-8 mt-10 bg-white text-black border-4 border-black shadow-[8px_8px_0_0_#00FFFF] text-center">
-                <h2 className="text-3xl mb-6 font-extrabold uppercase">👋 Welcome to PiYak!</h2>
-                <p className="mb-6 font-bold uppercase">Please sign in to access your secure tracker.</p>
-                <SignInButton mode="modal">
-                    <button className="bg-piyak-highlight text-black border-4 border-black shadow-[4px_4px_0_0_#000] hover:-translate-y-1 hover:shadow-[6px_6px_0_0_#000] active:translate-x-1 active:translate-y-1 active:shadow-none py-3 px-8 font-extrabold uppercase transition-all">
-                        Sign In / Register
-                    </button>
-                </SignInButton>
+            <div className="flex flex-col items-center justify-center min-h-[calc(100vh-4rem)] p-4 sm:p-8 animate-fade-in pb-20 mt-8">
+                {/* Hero Section */}
+                <div className="w-full max-w-[800px] bg-black border-8 border-white p-8 md:p-12 shadow-[16px_16px_0_0_#FF00FF] text-center rotate-[-1deg] mb-16 relative">
+                    {/* Decorative tape */}
+                    <div className="absolute -top-4 left-1/2 -translate-x-1/2 w-32 h-8 bg-white/80 border-2 border-black rotate-[3deg]" />
+                    
+                    <h1 className="text-6xl md:text-8xl font-extrabold text-white uppercase tracking-tighter mb-6 drop-shadow-[4px_4px_0_#00FFFF]">
+                        PiYak
+                    </h1>
+                    
+                    <div className="bg-white text-black border-4 border-black p-4 inline-block mb-8 rotate-[2deg] shadow-[4px_4px_0_0_#FFFF00]">
+                        <h2 className="text-xl md:text-3xl font-bold uppercase">
+                            The Most Unhinged Bodily Tracker on the Internet.
+                        </h2>
+                    </div>
+
+                    <p className="text-white font-bold text-lg md:text-xl mb-12 uppercase leading-relaxed max-w-2xl mx-auto">
+                        Stop using boring medical apps. Track your poops and periods with aggressive gamification, ruthless judgment, and absolute chaos. Sync with your partner and earn your trophies.
+                    </p>
+
+                    <SignInButton mode="modal">
+                        <button className="bg-[#FFFF00] text-black border-8 border-white shadow-[8px_8px_0_0_#FF0000] hover:-translate-y-2 hover:shadow-[12px_12px_0_0_#FF0000] active:translate-x-2 active:translate-y-2 active:shadow-none py-4 px-12 text-2xl font-extrabold uppercase transition-all rotate-[-2deg] hover:rotate-0">
+                            Start Tracking Now
+                        </button>
+                    </SignInButton>
+                </div>
+
+                {/* Features Grid */}
+                <div className="w-full max-w-[1000px] grid grid-cols-1 md:grid-cols-2 gap-8">
+                    {/* Feature 1 */}
+                    <div className="bg-[#00FFFF] text-black border-4 border-black p-6 shadow-[8px_8px_0_0_#000] transform transition-transform hover:scale-105">
+                        <div className="text-5xl mb-4">💩🩸</div>
+                        <h3 className="text-2xl font-extrabold uppercase mb-2">Dual Modes</h3>
+                        <p className="font-bold">Seamlessly switch between tracking your daily drops and your crimson tide. No fluff, just big buttons.</p>
+                    </div>
+
+                    {/* Feature 2 */}
+                    <div className="bg-[#FF00FF] text-white border-4 border-black p-6 shadow-[8px_8px_0_0_#000] transform transition-transform hover:scale-105">
+                        <div className="text-5xl mb-4">🕵️</div>
+                        <h3 className="text-2xl font-extrabold uppercase mb-2">Partner Sync</h3>
+                        <p className="font-bold">Connect with your partner. Snoop on their bowel movements. Receive push notifications when they go. Yes, really.</p>
+                    </div>
+
+                    {/* Feature 3 */}
+                    <div className="bg-[#FFFF00] text-black border-4 border-black p-6 shadow-[8px_8px_0_0_#000] transform transition-transform hover:scale-105">
+                        <div className="text-5xl mb-4">🏆</div>
+                        <h3 className="text-2xl font-extrabold uppercase mb-2">Achievement System</h3>
+                        <p className="font-bold">Unlock 18 wild trophies. Hit a 30-day streak for "God Tier". Sync your periods for "Blood Moon".</p>
+                    </div>
+
+                    {/* Feature 4 */}
+                    <div className="bg-black text-white border-4 border-white p-6 shadow-[8px_8px_0_0_#00FFFF] transform transition-transform hover:scale-105">
+                        <div className="text-5xl mb-4">🎁</div>
+                        <h3 className="text-2xl font-extrabold uppercase mb-2">Yak Wrapped</h3>
+                        <p className="font-bold">A completely unhinged monthly recap of your payloads. Find out if you're a Sloth or a Blue Whale.</p>
+                    </div>
+                </div>
+
+                {/* SEO Text */}
+                <div className="mt-20 max-w-[800px] text-center border-t-4 border-white pt-8">
+                    <p className="text-white font-bold text-sm uppercase">
+                        PiYak is the ultimate gamified poop tracker and period tracker for couples. Whether you need a habit tracker, a health app, or just want to send push notifications to your partner from the toilet, PiYak is the neo-brutalist solution you never knew you needed.
+                    </p>
+                </div>
             </div>
         );
     }
