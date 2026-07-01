@@ -1,6 +1,5 @@
-const CACHE_NAME = 'piyak-cache-v8';
+const CACHE_NAME = 'piyak-cache-v9';
 const urlsToCache = [
-    '/',
     '/manifest.json',
     '/images/icon-192x192.png',
     '/images/icon-512x512.png'
