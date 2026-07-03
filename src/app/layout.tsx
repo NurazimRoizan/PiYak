@@ -17,7 +17,7 @@ export const viewport = {
 };
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://piyak.jimiroi.com"),
+  metadataBase: new URL("https://piyak.jimiroi.com/"),
   title: "PiYak | Gamified Poop & Period Tracker for Couples",
   description: "The most unhinged, brutalist daily tracker. Sync your poops, track your periods, earn wild achievements, and get judged by a sentient Toilet Boss.",
   keywords: ["poop tracker", "period tracker", "couples tracker", "habit tracker", "neo-brutalist app", "funny tracker app", "piyak", "health gamification", "bowel movement tracker", "menstrual cycle tracker"],
@@ -28,7 +28,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "PiYak | Gamified Poop & Period Tracker",
     description: "Track your bodily functions. Sync with your partner. Earn wild achievements. The ultimate unhinged daily tracker.",
-    url: "https://piyak.jimiroi.com",
+    url: "https://piyak.jimiroi.com/",
     siteName: "PiYak",
     images: [
       {
