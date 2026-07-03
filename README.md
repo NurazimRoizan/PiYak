@@ -1,5 +1,15 @@
 # PiYak 💩🩸
 
+<div align="center">
+  <img src="https://img.shields.io/badge/Privacy-We_Know_When_You_Poop-FF0000?style=for-the-badge&logo=incognito&logoColor=white" alt="Privacy Badge" />
+  <img src="https://img.shields.io/badge/Deployed-Without_Testing-000000?style=for-the-badge&logo=vercel&logoColor=white" alt="Vercel Badge" />
+  <img src="https://img.shields.io/badge/Built_With-Pure_Brainrot-00FFFF?style=for-the-badge&logo=next.js&logoColor=black" alt="Next.js Badge" />
+  <img src="https://img.shields.io/badge/Design-Neo_Brutalist_Assault-FF00FF?style=for-the-badge&logo=css3&logoColor=white" alt="Design Badge" />
+  <img src="https://img.shields.io/badge/PRs-Judged_Harshly-FFFF00?style=for-the-badge&logo=github&logoColor=black" alt="PRs Badge" />
+  <img src="https://img.shields.io/badge/Maintained%3F-Barely-00FF00?style=for-the-badge&logo=coffeescript&logoColor=black" alt="Maintained Badge" />
+</div>
+
+
 PiYak is a highly unhinged, neo-brutalist Progressive Web App (PWA) designed to track your daily bowel movements and menstrual cycles. Why track it in a boring medical app when you can be judged by an aggressive "Toilet Boss" and earn wild gamified achievements?
 
 ## Features
