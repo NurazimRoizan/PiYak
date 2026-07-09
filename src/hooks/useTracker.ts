@@ -157,7 +157,7 @@ export function useTracker() {
                 setPeriodStartDate(dateKey);
             }
             if (status === 'end') {
-                if (!periodStartDate || new Date(dateKey) < new Date(periodStartDate)) {
+                if (!periodStartDate || new Date(dateKey + 'T00:00:00') < new Date(periodStartDate + 'T00:00:00')) {
                     alert("Please mark a 'Start Date' on an earlier day before marking the end.");
                     return;
                 }
@@ -181,6 +181,12 @@ export function useTracker() {
             if (status === 'clear') {
                 delete newStatuses[dateKey];
                 statusToSubmit = 'clear';
+                
+                // If we clear the current start date, recalculate the latest start date
+                if (dateKey === periodStartDate) {
+                    const dates = Object.keys(newStatuses).filter(key => newStatuses[key] === 'start').sort();
+                    setPeriodStartDate(dates.length > 0 ? dates[dates.length - 1] : null);
+                }
             } else {
                 newStatuses[dateKey] = String(status);
                 statusToSubmit = String(status);
@@ -211,24 +217,42 @@ export function useTracker() {
         predictionEndDateObj.setDate(predictionEndDateObj.getDate() + periodSettings.cycleLength - 1);
 
         const updatedStatuses = { ...currentStatuses };
+        const promises = [];
 
-        for (let d = new Date(startDateObj); d <= predictionEndDateObj; d.setDate(d.getDate() + 1)) {
-            const dateKey = getDateKey(d.getFullYear(), d.getMonth(), d.getDate());
-            if (dateKey === newStartDate) continue;
-
-            const predStatus = getPeriodStatus(dateKey, newStartDate, periodSettings, currentStatuses);
-            
-            if (predStatus && (predStatus.startsWith('predicted_') || predStatus.endsWith('_window'))) {
-                const sheetStatus = currentStatuses[dateKey];
-                if (!['start', 'end', 'flow'].includes(sheetStatus || '')) {
-                    if (sheetStatus !== predStatus) {
-                        updatedStatuses[dateKey] = predStatus;
-                        await submitData(dateKey, dailyCounts[dateKey] || 0, predStatus);
+        // 1. Clean up old stale predictions
+        for (const dateKey of Object.keys(updatedStatuses)) {
+            const sheetStatus = updatedStatuses[dateKey];
+            if (sheetStatus && (sheetStatus.startsWith('predicted_') || sheetStatus.endsWith('_window'))) {
+                const newPredStatus = getPeriodStatus(dateKey, newStartDate, periodSettings, updatedStatuses);
+                if (sheetStatus !== newPredStatus) {
+                    if (!newPredStatus) {
+                        delete updatedStatuses[dateKey];
+                        promises.push(submitData(dateKey, dailyCounts[dateKey] || 0, 'clear'));
                     }
                 }
             }
         }
+
+        // 2. Set new predictions for the current cycle
+        for (let d = new Date(startDateObj); d <= predictionEndDateObj; d.setDate(d.getDate() + 1)) {
+            const dateKey = getDateKey(d.getFullYear(), d.getMonth(), d.getDate());
+            if (dateKey === newStartDate) continue;
+
+            const predStatus = getPeriodStatus(dateKey, newStartDate, periodSettings, updatedStatuses);
+            
+            if (predStatus && (predStatus.startsWith('predicted_') || predStatus.endsWith('_window'))) {
+                const sheetStatus = updatedStatuses[dateKey];
+                if (!['start', 'end', 'flow'].includes(sheetStatus || '')) {
+                    if (sheetStatus !== predStatus) {
+                        updatedStatuses[dateKey] = predStatus;
+                        promises.push(submitData(dateKey, dailyCounts[dateKey] || 0, predStatus));
+                    }
+                }
+            }
+        }
+        
         setDailyStatuses(updatedStatuses);
+        await Promise.all(promises);
     };
 
     const savePeriodSettings = (settings: PeriodSettings) => {
