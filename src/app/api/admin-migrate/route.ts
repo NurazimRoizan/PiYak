@@ -72,30 +72,61 @@ export async function POST(request: Request) {
             });
         }
 
-        // 3. Move all related data via a transaction
-        await prisma.$transaction([
-            prisma.dailyRecord.updateMany({
-                where: { userId: oldId },
-                data: { userId: newId }
-            }),
-            prisma.userAchievement.updateMany({
-                where: { userId: oldId },
-                data: { userId: newId }
-            }),
-            prisma.notification.updateMany({
-                where: { userId: oldId },
-                data: { userId: newId }
-            }),
-            prisma.pushSubscription.updateMany({
-                where: { userId: oldId },
-                data: { userId: newId }
-            }),
-            // Update partner links: if anyone had the oldId as their partner, update them to point to the newId
-            prisma.user.updateMany({
-                where: { partnerId: oldId },
-                data: { partnerId: newId }
-            })
-        ]);
+        // 3. Move all related data with collision handling
+        
+        // --- Achievements ---
+        const oldAchievements = await prisma.userAchievement.findMany({ where: { userId: oldId } });
+        for (const ach of oldAchievements) {
+            try {
+                await prisma.userAchievement.update({
+                    where: { id: ach.id },
+                    data: { userId: newId }
+                });
+            } catch (err) {
+                // If it already exists for the new user, delete the old duplicate
+                await prisma.userAchievement.delete({ where: { id: ach.id } });
+            }
+        }
+
+        // --- Daily Records ---
+        const oldRecords = await prisma.dailyRecord.findMany({ where: { userId: oldId } });
+        for (const rec of oldRecords) {
+            try {
+                await prisma.dailyRecord.update({
+                    where: { id: rec.id },
+                    data: { userId: newId }
+                });
+            } catch (err) {
+                // If the new user already logged a record for this date, delete the old duplicate
+                await prisma.dailyRecord.delete({ where: { id: rec.id } });
+            }
+        }
+
+        // --- Notifications ---
+        await prisma.notification.updateMany({
+            where: { userId: oldId },
+            data: { userId: newId }
+        });
+
+        // --- Push Subscriptions ---
+        const oldSubs = await prisma.pushSubscription.findMany({ where: { userId: oldId } });
+        for (const sub of oldSubs) {
+            try {
+                await prisma.pushSubscription.update({
+                    where: { id: sub.id },
+                    data: { userId: newId }
+                });
+            } catch (err) {
+                await prisma.pushSubscription.delete({ where: { id: sub.id } });
+            }
+        }
+
+        // --- Partner Links ---
+        // If anyone had the oldId as their partner, update them to point to the newId
+        await prisma.user.updateMany({
+            where: { partnerId: oldId },
+            data: { partnerId: newId }
+        });
 
         // 4. Delete the old user
         if (oldUser) {
