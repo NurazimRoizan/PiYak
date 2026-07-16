@@ -55,6 +55,7 @@ export const metadata: Metadata = {
 };
 
 import NotificationToaster from "@/components/NotificationToaster";
+import ServiceWorkerRegister from "@/components/ServiceWorkerRegister";
 
 export default function RootLayout({
   children,
@@ -71,6 +72,7 @@ export default function RootLayout({
         <ClerkProvider appearance={{ baseTheme: dark }}>
           {children}
           <NotificationToaster />
+          <ServiceWorkerRegister />
         </ClerkProvider>
       </body>
     </html>
