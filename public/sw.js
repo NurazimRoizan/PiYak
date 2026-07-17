@@ -1,3 +1,8 @@
+// Force instant activation of the new Service Worker to kill the old broken one
+self.addEventListener('install', (event) => {
+    self.skipWaiting();
+});
+
 // Push event: Receives background push from server
 self.addEventListener('push', function(event) {
     if (event.data) {
