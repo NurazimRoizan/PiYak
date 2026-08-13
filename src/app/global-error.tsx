@@ -14,26 +14,45 @@ export default function GlobalError({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
-  const handleHardReset = () => {
+  const handleHardReset = async () => {
     // Standard industry practice for unrecoverable PWA client crashes:
-    // 1. Clear all local storage and session storage
+    
     if (typeof window !== 'undefined') {
+      // 1. Clear local and session storage
       window.localStorage.clear();
       window.sessionStorage.clear();
-    }
-    
-    // 2. Unregister all service workers
-    if (typeof navigator !== 'undefined' && 'serviceWorker' in navigator) {
-        navigator.serviceWorker.getRegistrations().then(function(registrations) {
-        for(let registration of registrations) {
-            registration.unregister();
-        }
-        });
+      
+      // 2. Clear all cookies
+      document.cookie.split(";").forEach(function(c) { 
+        document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); 
+      });
     }
 
-    // 3. Force reload from server
+    // 3. Clear Cache Storage (PWA Caches)
+    if (typeof window !== 'undefined' && 'caches' in window) {
+      try {
+        const cacheNames = await window.caches.keys();
+        await Promise.all(cacheNames.map(name => window.caches.delete(name)));
+      } catch (e) {
+        console.error("Failed to clear caches", e);
+      }
+    }
+    
+    // 4. Unregister all service workers (MUST be awaited)
+    if (typeof navigator !== 'undefined' && 'serviceWorker' in navigator) {
+      try {
+        const registrations = await navigator.serviceWorker.getRegistrations();
+        for (let registration of registrations) {
+          await registration.unregister();
+        }
+      } catch (e) {
+        console.error("Failed to unregister service workers", e);
+      }
+    }
+
+    // 5. Force navigate to root
     if (typeof window !== 'undefined') {
-        window.location.reload();
+        window.location.href = '/';
     }
   };
 
