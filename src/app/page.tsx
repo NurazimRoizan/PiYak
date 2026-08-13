@@ -10,12 +10,13 @@ import PushNotificationModal from '@/components/PushNotificationModal';
 import TrophyRoomModal from '@/components/TrophyRoomModal';
 import YakWrappedModal from '@/components/YakWrappedModal';
 import { ACHIEVEMENTS, AchievementCode } from '@/utils/achievementsData';
-import { useUser, SignInButton, UserButton, SignedIn, SignedOut } from '@clerk/nextjs';
+import { useAuth, useUser, SignInButton, UserButton } from '@clerk/nextjs';
 import { dark } from '@clerk/themes';
 
 const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
 export default function Home() {
+    const { isLoaded, userId } = useAuth();
     const { user: currentUser } = useUser();
     const tracker = useTracker();
     const currentUsername = currentUser?.username || currentUser?.firstName || "User";
@@ -61,13 +62,10 @@ export default function Home() {
         tracker.toggleStatus(selectedDate, action);
     };
 
-    const todayDateStr = new Date().toLocaleDateString('en-GB', { month: 'long', day: 'numeric' });
-    const weekDayStr = new Date().toLocaleDateString('en-GB', { weekday: 'long' });
-
-    return (
-        <>
-            <SignedOut>
-                <div className="flex flex-col items-center justify-center min-h-[calc(100vh-4rem)] p-4 sm:p-8 animate-fade-in pb-20 mt-8">
+    // If there is no user (or it's Googlebot), render the landing page immediately
+    if (!userId) {
+        return (
+            <div className="flex flex-col items-center justify-center min-h-[calc(100vh-4rem)] p-4 sm:p-8 animate-fade-in pb-20 mt-8">
                     {/* Hero Section */}
                     <div className="w-full max-w-[800px] bg-black border-8 border-white p-8 md:p-12 shadow-[16px_16px_0_0_#FF00FF] text-center rotate-[-1deg] mb-16 relative">
                         {/* Decorative tape */}
@@ -139,26 +137,34 @@ export default function Home() {
                         </p>
                     </div>
                 </div>
-            </SignedOut>
+        );
+    }
 
-            <SignedIn>
-                {tracker.isLoading ? (
-                    <div className="fixed inset-0 bg-black z-[100] flex justify-center items-center">
-                        <div className="relative w-full max-w-[500px] aspect-[9/16] max-h-screen">
-                            <img 
-                                src="/images/loader.PNG" 
-                                alt="Loading PiYak..." 
-                                className="absolute inset-0 w-full h-full object-cover object-center" 
-                            />
-                            {/* The animated progress bar perfectly scaled */}
-                            <div className="absolute bottom-[39%] left-[14%] w-[72%] h-[6%] bg-transparent rounded-full overflow-hidden shadow-[inset_0_2px_4px_rgba(0,0,0,0.6)]">
-                                <div className="w-full h-full poop-bar-animated rounded-full" />
-                            </div>
-                        </div>
+    // If we are authenticated but data is loading, show the loader
+    if (!isLoaded || tracker.isLoading) {
+        return (
+            <div className="fixed inset-0 bg-black z-[100] flex justify-center items-center">
+                <div className="relative w-full max-w-[500px] aspect-[9/16] max-h-screen">
+                    <img 
+                        src="/images/loader.PNG" 
+                        alt="Loading PiYak..." 
+                        className="absolute inset-0 w-full h-full object-cover object-center" 
+                    />
+                    {/* The animated progress bar perfectly scaled */}
+                    <div className="absolute bottom-[39%] left-[14%] w-[72%] h-[6%] bg-transparent rounded-full overflow-hidden shadow-[inset_0_2px_4px_rgba(0,0,0,0.6)]">
+                        <div className="w-full h-full poop-bar-animated rounded-full" />
                     </div>
-                ) : (
-                    <div className="w-[calc(100%-56px)] max-w-[700px] mx-auto p-6 my-8 bg-black border-4 border-white shadow-[12px_12px_0_0_#FF00FF]">
-                        <div className="flex justify-between items-start mb-1">
+                </div>
+            </div>
+        );
+    }
+
+    const todayDateStr = new Date().toLocaleDateString('en-GB', { month: 'long', day: 'numeric' });
+    const weekDayStr = new Date().toLocaleDateString('en-GB', { weekday: 'long' });
+
+    return (
+        <div className="w-[calc(100%-56px)] max-w-[700px] mx-auto p-6 my-8 bg-black border-4 border-white shadow-[12px_12px_0_0_#FF00FF]">
+            <div className="flex justify-between items-start mb-1">
                 <p className="text-xl font-bold uppercase tracking-widest text-piyak-highlight">{todayDateStr}</p>
                 <div className="border-4 border-black p-1 bg-white shadow-[4px_4px_0_0_#FF00FF] hover:-translate-y-1 hover:shadow-[6px_6px_0_0_#FF00FF] transition-transform rotate-[3deg] hover:rotate-0">
                     <UserButton 
@@ -419,9 +425,6 @@ export default function Home() {
                     })}
                 </div>
             )}
-                    </div>
-                )}
-            </SignedIn>
-        </>
+        </div>
     );
 }
