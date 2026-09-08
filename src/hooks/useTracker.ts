@@ -36,7 +36,11 @@ export function useTracker() {
         setAppMode(savedMode);
         
         if (savedSettings) {
-            setPeriodSettings(JSON.parse(savedSettings));
+            try {
+                setPeriodSettings(JSON.parse(savedSettings));
+            } catch (e) {
+                console.warn("Invalid period settings JSON in storage", e);
+            }
         }
 
         const fetchPartnerInfo = async () => {

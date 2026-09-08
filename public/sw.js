@@ -61,7 +61,7 @@ self.addEventListener('activate', (event) => {
 // Dummy fetch event: Required by Chrome to recognize the app as an installable PWA
 self.addEventListener('fetch', (event) => {
     // Explicitly bypass Clerk authentication requests and API routes to prevent credential stripping
-    if (event.request.url.includes('/__clerk/') || event.request.url.includes('clerk.')) {
+    if (event.request.url.includes('/__clerk/') || event.request.url.includes('clerk.') || event.request.url.includes('/api/')) {
         return;
     }
     // We don't cache anything. This satisfies the PWA installability requirement.

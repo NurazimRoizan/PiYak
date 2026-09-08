@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useAuth } from '@clerk/nextjs';
 
 interface Notification {
     id: string;
@@ -10,9 +11,15 @@ interface Notification {
 }
 
 export default function NotificationToaster() {
+    const { userId } = useAuth();
     const [notifications, setNotifications] = useState<Notification[]>([]);
     
     useEffect(() => {
+        if (!userId) {
+            setNotifications([]);
+            return;
+        }
+
         // Request Notification permission if supported and not already requested
         if (typeof window !== 'undefined' && 'Notification' in window) {
             if (Notification.permission === 'default') {
@@ -21,6 +28,7 @@ export default function NotificationToaster() {
         }
 
         const fetchNotifications = async () => {
+            if (!userId) return;
             try {
                 const res = await fetch('/api/notifications');
                 if (res.ok) {
@@ -59,7 +67,7 @@ export default function NotificationToaster() {
         // Poll every 10 seconds
         const intervalId = setInterval(fetchNotifications, 10000);
         return () => clearInterval(intervalId);
-    }, []);
+    }, [userId]);
 
     const dismissNotification = async (id: string) => {
         // Optimistic UI update

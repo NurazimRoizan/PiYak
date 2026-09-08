@@ -15,20 +15,39 @@ export default function GlobalError({
   reset: () => void;
 }) {
   const handleHardReset = async () => {
-    // Standard industry practice for unrecoverable PWA client crashes:
-    
+    // 1. Tell server to wipe all HttpOnly Clerk auth cookies and revoke sessions
+    try {
+      await fetch('/api/auth/reset', { method: 'POST' });
+    } catch (e) {
+      console.error("Failed to call auth reset endpoint", e);
+    }
+
     if (typeof window !== 'undefined') {
-      // 1. Clear local and session storage
+      // 2. Clear local and session storage
       window.localStorage.clear();
       window.sessionStorage.clear();
       
-      // 2. Clear all cookies
+      // 3. Clear all client cookies (fallback for non-HttpOnly)
       document.cookie.split(";").forEach(function(c) { 
         document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); 
       });
+
+      // 4. Clear IndexedDB (where Clerk SDK caches client state)
+      if ('indexedDB' in window && typeof window.indexedDB.databases === 'function') {
+        try {
+          const dbs = await window.indexedDB.databases();
+          for (const db of dbs) {
+            if (db.name) {
+              window.indexedDB.deleteDatabase(db.name);
+            }
+          }
+        } catch (e) {
+          console.error("Failed to clear indexedDB", e);
+        }
+      }
     }
 
-    // 3. Clear Cache Storage (PWA Caches)
+    // 5. Clear Cache Storage (PWA Caches)
     if (typeof window !== 'undefined' && 'caches' in window) {
       try {
         const cacheNames = await window.caches.keys();
@@ -38,7 +57,7 @@ export default function GlobalError({
       }
     }
     
-    // 4. Unregister all service workers (MUST be awaited)
+    // 6. Unregister all service workers (MUST be awaited)
     if (typeof navigator !== 'undefined' && 'serviceWorker' in navigator) {
       try {
         const registrations = await navigator.serviceWorker.getRegistrations();
@@ -50,9 +69,9 @@ export default function GlobalError({
       }
     }
 
-    // 5. Force navigate to root
+    // 7. Force navigate to root
     if (typeof window !== 'undefined') {
-        window.location.href = '/';
+        window.location.replace('/');
     }
   };
 
