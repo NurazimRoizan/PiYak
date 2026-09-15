@@ -130,10 +130,108 @@ export default function Home() {
                         </div>
                     </div>
 
+                    {/* How It Works Section */}
+                    <div className="w-full max-w-[1000px] mt-20 text-left">
+                        <div className="border-4 border-white bg-[#00FF66] text-black p-4 inline-block mb-8 rotate-[-1deg] shadow-[6px_6px_0_0_#FFF]">
+                            <h2 className="text-2xl md:text-4xl font-extrabold uppercase tracking-tight">
+                                How PiYak Works
+                            </h2>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div className="bg-black border-4 border-white p-6 shadow-[8px_8px_0_0_#FFFF00]">
+                                <div className="text-3xl font-black text-[#FFFF00] mb-2">01 / LOG</div>
+                                <h3 className="text-xl font-bold uppercase text-white mb-2">One-Tap Tracking</h3>
+                                <p className="text-gray-300 text-sm leading-relaxed">
+                                    Log your daily bowel movements or menstrual cycle phases in under 3 seconds. Fast, bold neo-brutalist buttons built for rapid logging when nature calls.
+                                </p>
+                            </div>
+                            <div className="bg-black border-4 border-white p-6 shadow-[8px_8px_0_0_#FF00FF]">
+                                <div className="text-3xl font-black text-[#FF00FF] mb-2">02 / SYNC</div>
+                                <h3 className="text-xl font-bold uppercase text-white mb-2">Multiplayer For Couples</h3>
+                                <p className="text-gray-300 text-sm leading-relaxed">
+                                    Generate a private partner invite code to link accounts. Monitor cycle timelines together, view shared habit calendars, and receive real-time toilet push notifications.
+                                </p>
+                            </div>
+                            <div className="bg-black border-4 border-white p-6 shadow-[8px_8px_0_0_#00FFFF]">
+                                <div className="text-3xl font-black text-[#00FFFF] mb-2">03 / LEVEL UP</div>
+                                <h3 className="text-xl font-bold uppercase text-white mb-2">Gamified Trophies</h3>
+                                <p className="text-gray-300 text-sm leading-relaxed">
+                                    Unlock 18 unique achievements, maintain daily streak badges, and get hilarious end-of-month Yak Wrapped summaries comparing your habits to wildlife payloads.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* FAQ Section */}
+                    <div className="w-full max-w-[1000px] mt-20 text-left">
+                        <div className="border-4 border-white bg-[#FFFF00] text-black p-4 inline-block mb-8 rotate-[1deg] shadow-[6px_6px_0_0_#FFF]">
+                            <h2 className="text-2xl md:text-4xl font-extrabold uppercase tracking-tight">
+                                Frequently Asked Questions
+                            </h2>
+                        </div>
+                        <div className="space-y-6">
+                            <div className="bg-black border-4 border-white p-6 shadow-[6px_6px_0_0_#00FFFF]">
+                                <h3 className="text-lg md:text-xl font-extrabold text-[#00FFFF] uppercase mb-2">
+                                    What is PiYak and why is it gamified?
+                                </h3>
+                                <p className="text-gray-300 text-sm md:text-base leading-relaxed">
+                                    PiYak is a gamified, neo-brutalist bodily tracker for couples and individuals to track bowel movements and menstrual cycles. Unlike clinical, sterile health apps, PiYak adds irreverent humor, streak rewards, and playful accountability to daily biological tracking.
+                                </p>
+                            </div>
+                            <div className="bg-black border-4 border-white p-6 shadow-[6px_6px_0_0_#FF00FF]">
+                                <h3 className="text-lg md:text-xl font-extrabold text-[#FF00FF] uppercase mb-2">
+                                    How does partner synchronization work?
+                                </h3>
+                                <p className="text-gray-300 text-sm md:text-base leading-relaxed">
+                                    Inside your account settings, you can generate an exclusive partner invite code. When your partner inputs the code on their account, your calendars link securely. You can celebrate streaks together, coordinate cycles, and send push notifications.
+                                </p>
+                            </div>
+                            <div className="bg-black border-4 border-white p-6 shadow-[6px_6px_0_0_#FFFF00]">
+                                <h3 className="text-lg md:text-xl font-extrabold text-[#FFFF00] uppercase mb-2">
+                                    Can I track both bowel movements and menstrual cycles?
+                                </h3>
+                                <p className="text-gray-300 text-sm md:text-base leading-relaxed">
+                                    Yes! PiYak features a seamless dual-mode switch. You can track bowel movements (poops) with instant counters, or toggle into period mode to record cycle flow, symptom days, and upcoming estimates on a synchronized calendar.
+                                </p>
+                            </div>
+                            <div className="bg-black border-4 border-white p-6 shadow-[6px_6px_0_0_#00FF66]">
+                                <h3 className="text-lg md:text-xl font-extrabold text-[#00FF66] uppercase mb-2">
+                                    Is PiYak free and can it be installed on mobile?
+                                </h3>
+                                <p className="text-gray-300 text-sm md:text-base leading-relaxed">
+                                    Yes, PiYak is 100% free to use. It is built as a Progressive Web App (PWA). You can install it straight from your browser on iOS (Safari: Share &gt; Add to Home Screen) or Android (Chrome: Install App) with full offline caching and instant load times.
+                                </p>
+                            </div>
+                            <div className="bg-black border-4 border-white p-6 shadow-[6px_6px_0_0_#FFF]">
+                                <h3 className="text-lg md:text-xl font-extrabold text-white uppercase mb-2">
+                                    Is my bodily health data private and secure?
+                                </h3>
+                                <p className="text-gray-300 text-sm md:text-base leading-relaxed">
+                                    Privacy is paramount. Your health data is strictly encrypted and accessible only by your authenticated account and your linked partner. PiYak utilizes Clerk authentication and isolated PostgreSQL storage. Your data is never sold or shared with advertisers.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Bottom CTA */}
+                    <div className="w-full max-w-[800px] mt-20 bg-black border-8 border-white p-8 md:p-12 shadow-[12px_12px_0_0_#FFFF00] text-center rotate-[1deg]">
+                        <h2 className="text-3xl md:text-5xl font-black text-white uppercase tracking-tight mb-4">
+                            Ready to Track Your Bodily Chaos?
+                        </h2>
+                        <p className="text-gray-300 font-bold uppercase mb-8 max-w-xl mx-auto">
+                            Join couples tracking their daily drops and cycles. Zero clinical boredom, 100% brutalist accountability.
+                        </p>
+                        <SignInButton mode="modal">
+                            <button className="bg-[#00FFFF] text-black border-4 border-white shadow-[6px_6px_0_0_#FF00FF] hover:-translate-y-1 hover:shadow-[10px_10px_0_0_#FF00FF] py-4 px-10 text-2xl font-black uppercase transition-all">
+                                Get Started Free
+                            </button>
+                        </SignInButton>
+                    </div>
+
                     {/* SEO Text */}
-                    <div className="mt-20 max-w-[800px] text-center border-t-4 border-white pt-8">
-                        <p className="text-white font-bold text-sm uppercase">
-                            PiYak is the ultimate gamified poop tracker and period tracker for couples. Whether you need a habit tracker, a health app, or just want to send push notifications to your partner from the toilet, PiYak is the neo-brutalist solution you never knew you needed.
+                    <div className="mt-16 max-w-[800px] text-center border-t-4 border-white pt-8">
+                        <p className="text-gray-400 font-bold text-xs uppercase leading-relaxed tracking-wider">
+                            PiYak is the ultimate gamified poop tracker and period tracker for couples. Whether you need a habit tracker, a health app, or just want to send push notifications to your partner from the toilet, PiYak is the neo-brutalist solution you never knew you needed. Built by Jimi Roi.
                         </p>
                     </div>
                 </div>

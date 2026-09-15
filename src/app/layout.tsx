@@ -67,6 +67,76 @@ export default function RootLayout({
       <head>
         <link rel="manifest" href="/manifest.json" />
         <link rel="preload" href="/images/loader.PNG" as="image" />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@graph": [
+                {
+                  "@type": "WebApplication",
+                  "@id": "https://piyak.jimiroi.com/#app",
+                  "name": "PiYak",
+                  "url": "https://piyak.jimiroi.com",
+                  "description": "The most unhinged, brutalist daily tracker. Sync your poops, track your periods, earn wild achievements, and get judged by a sentient Toilet Boss.",
+                  "applicationCategory": "HealthApplication",
+                  "operatingSystem": "All",
+                  "offers": {
+                    "@type": "Offer",
+                    "price": "0",
+                    "priceCurrency": "USD"
+                  }
+                },
+                {
+                  "@type": "FAQPage",
+                  "@id": "https://piyak.jimiroi.com/#faq",
+                  "mainEntity": [
+                    {
+                      "@type": "Question",
+                      "name": "What is PiYak and why is it gamified?",
+                      "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "PiYak is a gamified, neo-brutalist bodily tracker for couples and individuals to track bowel movements and menstrual cycles with achievements, streaks, and partner sync push notifications."
+                      }
+                    },
+                    {
+                      "@type": "Question",
+                      "name": "How does partner synchronization work?",
+                      "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "Each user gets a private invite code. Once linked, couples can view shared habit calendars, stay updated on cycle phases, and receive instant push notifications."
+                      }
+                    },
+                    {
+                      "@type": "Question",
+                      "name": "Can I track both bowel movements and menstrual cycles?",
+                      "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "Yes. PiYak features seamless dual-mode switching to track bowel movements or switch to the period tracker to monitor cycle lengths and flow days."
+                      }
+                    },
+                    {
+                      "@type": "Question",
+                      "name": "Is PiYak free and can it be installed on mobile?",
+                      "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "Yes, PiYak is 100% free and built as a Progressive Web App (PWA). You can install it on iOS via Safari 'Add to Home Screen' or Android via Chrome for an offline-ready native app experience."
+                      }
+                    },
+                    {
+                      "@type": "Question",
+                      "name": "Is my personal health data private and secure?",
+                      "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "Yes. Your personal logs are strictly accessible by you and your authorized linked partner. PiYak uses enterprise-grade Clerk authentication and encrypted database connections."
+                      }
+                    }
+                  ]
+                }
+              ]
+            })
+          }}
+        />
       </head>
       <body className="min-h-full flex flex-col animate-fade-in bg-black">
         <ClerkProvider appearance={{ baseTheme: dark }}>
