@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { Space_Grotesk } from 'next/font/google';
 
 const spaceGrotesk = Space_Grotesk({
@@ -14,23 +15,41 @@ export default function GlobalError({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  const [isResetting, setIsResetting] = useState(false);
+
   const handleHardReset = async () => {
-    // 1. Tell server to wipe all HttpOnly Clerk auth cookies and revoke sessions
+    if (isResetting) return;
+    setIsResetting(true);
+
+    // 1. Send POST to reset endpoint (best-effort background revoke/clear)
     try {
       await fetch('/api/auth/reset', { method: 'POST' });
     } catch (e) {
-      console.error("Failed to call auth reset endpoint", e);
+      console.error("Failed to call auth reset endpoint via fetch", e);
     }
 
     if (typeof window !== 'undefined') {
       // 2. Clear local and session storage
-      window.localStorage.clear();
-      window.sessionStorage.clear();
-      
-      // 3. Clear all client cookies (fallback for non-HttpOnly)
-      document.cookie.split(";").forEach(function(c) { 
-        document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); 
-      });
+      try {
+        window.localStorage.clear();
+        window.sessionStorage.clear();
+      } catch (e) {
+        console.error("Failed to clear storage", e);
+      }
+
+      // 3. Clear all client-accessible cookies
+      try {
+        document.cookie.split(";").forEach((c) => {
+          const cookieName = c.trim().split("=")[0];
+          if (cookieName) {
+            document.cookie = `${cookieName}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/`;
+            document.cookie = `${cookieName}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=${window.location.hostname}`;
+            document.cookie = `${cookieName}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=.${window.location.hostname}`;
+          }
+        });
+      } catch (e) {
+        console.error("Failed to clear client cookies", e);
+      }
 
       // 4. Clear IndexedDB (where Clerk SDK caches client state)
       if ('indexedDB' in window && typeof window.indexedDB.databases === 'function') {
@@ -45,33 +64,34 @@ export default function GlobalError({
           console.error("Failed to clear indexedDB", e);
         }
       }
-    }
 
-    // 5. Clear Cache Storage (PWA Caches)
-    if (typeof window !== 'undefined' && 'caches' in window) {
-      try {
-        const cacheNames = await window.caches.keys();
-        await Promise.all(cacheNames.map(name => window.caches.delete(name)));
-      } catch (e) {
-        console.error("Failed to clear caches", e);
-      }
-    }
-    
-    // 6. Unregister all service workers (MUST be awaited)
-    if (typeof navigator !== 'undefined' && 'serviceWorker' in navigator) {
-      try {
-        const registrations = await navigator.serviceWorker.getRegistrations();
-        for (let registration of registrations) {
-          await registration.unregister();
+      // 5. Clear Cache Storage (PWA Caches)
+      if ('caches' in window) {
+        try {
+          const cacheNames = await window.caches.keys();
+          await Promise.all(cacheNames.map((name) => window.caches.delete(name)));
+        } catch (e) {
+          console.error("Failed to clear caches", e);
         }
-      } catch (e) {
-        console.error("Failed to unregister service workers", e);
       }
-    }
 
-    // 7. Force navigate to root
-    if (typeof window !== 'undefined') {
-        window.location.replace('/');
+      // 6. Unregister all service workers
+      if ('serviceWorker' in navigator) {
+        try {
+          const registrations = await navigator.serviceWorker.getRegistrations();
+          for (const registration of registrations) {
+            await registration.unregister();
+          }
+        } catch (e) {
+          console.error("Failed to unregister service workers", e);
+        }
+      }
+
+      // 7. Top-level GET navigation to /api/auth/reset.
+      // This forces the browser to make a full document navigation request.
+      // The server issues multi-domain Set-Cookie headers with status 303 redirecting to '/',
+      // guaranteeing all HttpOnly domain cookies are purged before landing cleanly on '/'.
+      window.location.replace('/api/auth/reset');
     }
   };
 
@@ -94,14 +114,15 @@ export default function GlobalError({
           </div>
 
           <p className="text-white font-bold text-lg mb-12 uppercase leading-relaxed max-w-2xl mx-auto">
-            Something went horribly wrong. Your local data might be corrupted.
+            Something went horribly wrong. Your session or local data might be corrupted.
           </p>
 
           <button 
             onClick={handleHardReset}
-            className="bg-[#FF00FF] text-white border-8 border-white shadow-[8px_8px_0_0_#FFFF00] hover:-translate-y-2 hover:shadow-[12px_12px_0_0_#FFFF00] active:translate-x-2 active:translate-y-2 active:shadow-none py-4 px-12 text-2xl font-extrabold uppercase transition-all rotate-[2deg] hover:rotate-0"
+            disabled={isResetting}
+            className="bg-[#FF00FF] text-white border-8 border-white shadow-[8px_8px_0_0_#FFFF00] hover:-translate-y-2 hover:shadow-[12px_12px_0_0_#FFFF00] active:translate-x-2 active:translate-y-2 active:shadow-none py-4 px-12 text-2xl font-extrabold uppercase transition-all rotate-[2deg] hover:rotate-0 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Hard Reset & Fix
+            {isResetting ? 'Resetting...' : 'Hard Reset & Fix'}
           </button>
         </div>
       </body>
