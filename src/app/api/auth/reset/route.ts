@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { auth, clerkClient } from '@clerk/nextjs/server';
-import { appendAuthCookiePurgeHeaders, extractCookieNamesFromHeader } from '@/utils/auth-cookies';
+import { appendAuthCookiePurgeHeaders } from '@/utils/auth-cookies';
 
 async function performReset(request: Request, isRedirect: boolean) {
   try {
@@ -29,11 +29,8 @@ async function performReset(request: Request, isRedirect: boolean) {
   response.headers.set('Pragma', 'no-cache');
   response.headers.set('Expires', '0');
 
-  // Purge all known auth cookies and any cookie currently sent in the request header across all domains
-  const rawCookieHeader = request.headers.get('cookie');
-  const extraCookieNames = extractCookieNamesFromHeader(rawCookieHeader);
-
-  appendAuthCookiePurgeHeaders(response.headers, requestUrl.hostname, extraCookieNames);
+  // Purge essential Clerk auth cookies across host-only and parent domain scopes
+  appendAuthCookiePurgeHeaders(response.headers, requestUrl.hostname);
 
   return response;
 }
