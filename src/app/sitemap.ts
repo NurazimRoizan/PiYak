@@ -7,5 +7,10 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: 'weekly',
       priority: 1,
     },
+    {
+      url: 'https://piyak.jimiroi.com/privacy-policy',
+      changeFrequency: 'yearly',
+      priority: 0.3,
+    },
   ];
 }

@@ -1,4 +1,11 @@
+import type { Metadata } from "next";
 import { SignUp } from "@clerk/nextjs";
+
+// Keep the sign-up page out of search, and stop it inheriting the homepage canonical from layout.tsx
+export const metadata: Metadata = {
+  robots: { index: false, follow: true },
+  alternates: { canonical: "/sign-up" },
+};
 
 export default function Page() {
   return (

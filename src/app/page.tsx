@@ -12,8 +12,58 @@ import YakWrappedModal from '@/components/YakWrappedModal';
 import { ACHIEVEMENTS, AchievementCode } from '@/utils/achievementsData';
 import { useAuth, useUser, SignInButton, UserButton } from '@clerk/nextjs';
 import { dark } from '@clerk/themes';
+import Link from 'next/link';
 
 const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+
+// FAQ structured data lives here rather than in layout.tsx so it only appears on the page that shows the FAQ
+const faqJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "@id": "https://piyak.jimiroi.com/#faq",
+    "mainEntity": [
+        {
+            "@type": "Question",
+            "name": "What is PiYak and why is it gamified?",
+            "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "PiYak is a gamified, neo-brutalist bodily tracker for couples and individuals to track bowel movements and menstrual cycles with achievements, streaks, and partner sync push notifications."
+            }
+        },
+        {
+            "@type": "Question",
+            "name": "How does partner synchronization work?",
+            "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Each user gets a private invite code. Once linked, couples can view shared habit calendars, stay updated on cycle phases, and receive instant push notifications."
+            }
+        },
+        {
+            "@type": "Question",
+            "name": "Can I track both bowel movements and menstrual cycles?",
+            "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Yes. PiYak features seamless dual-mode switching to track bowel movements or switch to the period tracker to monitor cycle lengths and flow days."
+            }
+        },
+        {
+            "@type": "Question",
+            "name": "Is PiYak free and can it be installed on mobile?",
+            "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Yes, PiYak is 100% free and built as a Progressive Web App (PWA). You can install it on iOS via Safari 'Add to Home Screen' or Android via Chrome for an offline-ready native app experience."
+            }
+        },
+        {
+            "@type": "Question",
+            "name": "Is my personal health data private and secure?",
+            "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Yes. Your personal logs are strictly accessible by you and your authorized linked partner. PiYak uses enterprise-grade Clerk authentication and encrypted database connections."
+            }
+        }
+    ]
+};
 
 export default function Home() {
     const { isLoaded, userId } = useAuth();
@@ -164,6 +214,10 @@ export default function Home() {
 
                     {/* FAQ Section */}
                     <div className="w-full max-w-[1000px] mt-20 text-left">
+                        <script
+                            type="application/ld+json"
+                            dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+                        />
                         <div className="border-4 border-white bg-[#FFFF00] text-black p-4 inline-block mb-8 rotate-[1deg] shadow-[6px_6px_0_0_#FFF]">
                             <h2 className="text-2xl md:text-4xl font-extrabold uppercase tracking-tight">
                                 Frequently Asked Questions
@@ -231,7 +285,10 @@ export default function Home() {
                     {/* SEO Text */}
                     <div className="mt-16 max-w-[800px] text-center border-t-4 border-white pt-8">
                         <p className="text-gray-400 font-bold text-xs uppercase leading-relaxed tracking-wider">
-                            PiYak is the ultimate gamified poop tracker and period tracker for couples. Whether you need a habit tracker, a health app, or just want to send push notifications to your partner from the toilet, PiYak is the neo-brutalist solution you never knew you needed. Built by Jimi Roi.
+                            PiYak is the ultimate gamified poop tracker and period tracker for couples. Whether you need a habit tracker, a health app, or just want to send push notifications to your partner from the toilet, PiYak is the neo-brutalist solution you never knew you needed. Built by <a href="https://jimiroi.com" className="underline hover:text-white">Jimi Roi</a>.
+                        </p>
+                        <p className="mt-4 text-gray-400 font-bold text-xs uppercase tracking-wider">
+                            <Link href="/privacy-policy" className="underline hover:text-white">Privacy Policy</Link>
                         </p>
                     </div>
                 </div>
