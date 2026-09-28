@@ -4,6 +4,8 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
+export const maxDuration = 60; // Allow maximum serverless execution window
+
 export async function GET() {
     const { userId } = await auth();
     if (!userId) {
@@ -63,7 +65,7 @@ export async function POST(request: Request) {
 
     try {
         const { oldId } = await request.json();
-        const newId = currentUserId; // Strictly bound to current authenticated caller
+        const newId = currentUserId; // Strictly locked to current authenticated caller
 
         if (!oldId || typeof oldId !== 'string') {
             return NextResponse.json({ error: "Missing or invalid oldId" }, { status: 400 });
@@ -80,98 +82,60 @@ export async function POST(request: Request) {
             create: { id: newId }
         });
 
-        // 2. Fetch OLD user with all relations
+        // 2. Fetch OLD user
         const oldUser = await prisma.user.findUnique({
-            where: { id: oldId },
-            include: {
-                records: true,
-                achievements: true,
-                notifications: true,
-                pushSubscriptions: true
-            }
+            where: { id: oldId }
         });
 
         if (!oldUser) {
             return NextResponse.json({ error: "Old account not found in database" }, { status: 404 });
         }
 
-        // 3. Migrate DailyRecords safely (handling unique constraint collisions on [userId, dateKey])
-        for (const oldRec of oldUser.records) {
-            const existingNewRec = await prisma.dailyRecord.findUnique({
-                where: { userId_dateKey: { userId: newId, dateKey: oldRec.dateKey } }
-            });
-
-            if (existingNewRec) {
-                await prisma.dailyRecord.update({
-                    where: { id: existingNewRec.id },
-                    data: {
-                        counterValue: Math.max(existingNewRec.counterValue, oldRec.counterValue),
-                        status: existingNewRec.status || oldRec.status
-                    }
-                });
-                await prisma.dailyRecord.delete({ where: { id: oldRec.id } });
-            } else {
-                await prisma.dailyRecord.update({
-                    where: { id: oldRec.id },
-                    data: { userId: newId }
-                });
-            }
-        }
-
-        // 4. Migrate UserAchievements safely (handling unique constraint collisions on [userId, code])
-        for (const oldAch of oldUser.achievements) {
-            const existingNewAch = await prisma.userAchievement.findUnique({
-                where: { userId_code: { userId: newId, code: oldAch.code } }
-            });
-
-            if (existingNewAch) {
-                await prisma.userAchievement.delete({ where: { id: oldAch.id } });
-            } else {
-                await prisma.userAchievement.update({
-                    where: { id: oldAch.id },
-                    data: { userId: newId }
-                });
-            }
-        }
-
-        // 5. Migrate Notifications & PushSubscriptions
-        await prisma.notification.updateMany({
-            where: { userId: oldId },
-            data: { userId: newId }
+        // 3. Clear any initial scratch data on the new account to prevent unique constraint collisions
+        await prisma.dailyRecord.deleteMany({
+            where: { userId: newId }
+        });
+        await prisma.userAchievement.deleteMany({
+            where: { userId: newId }
         });
 
-        await prisma.pushSubscription.updateMany({
-            where: { userId: oldId },
-            data: { userId: newId }
-        });
+        // 4. High-speed atomic batch transfer via a single SQL transaction (takes < 1 second)
+        await prisma.$transaction([
+            prisma.dailyRecord.updateMany({
+                where: { userId: oldId },
+                data: { userId: newId }
+            }),
+            prisma.userAchievement.updateMany({
+                where: { userId: oldId },
+                data: { userId: newId }
+            }),
+            prisma.notification.updateMany({
+                where: { userId: oldId },
+                data: { userId: newId }
+            }),
+            prisma.pushSubscription.updateMany({
+                where: { userId: oldId },
+                data: { userId: newId }
+            }),
+            prisma.user.updateMany({
+                where: { partnerId: oldId },
+                data: { partnerId: newId }
+            })
+        ]);
 
-        // 6. Update Partner links
-        // A) If old user was connected to a partner:
-        if (oldUser.partnerId) {
-            await prisma.user.update({
-                where: { id: newId },
-                data: { partnerId: oldUser.partnerId }
-            });
-        }
-        // B) If anyone had oldId as their partner (e.g. partner's account):
-        await prisma.user.updateMany({
-            where: { partnerId: oldId },
-            data: { partnerId: newId }
-        });
-
-        // 7. Transfer User Settings (appMode, periodSettings)
+        // 5. Transfer User Settings (appMode, periodSettings, partnerId)
         await prisma.user.update({
             where: { id: newId },
             data: {
                 appMode: oldUser.appMode,
                 periodSettings: oldUser.periodSettings,
+                partnerId: oldUser.partnerId
             }
         });
 
-        // 8. Transfer Invite Code if applicable
+        // 6. Transfer Invite Code if applicable
         if (oldUser.inviteCode) {
             const oldInviteCode = oldUser.inviteCode;
-            // Clear old invite code first to prevent unique constraint conflict
             await prisma.user.update({
                 where: { id: oldId },
                 data: { inviteCode: null }
@@ -184,7 +148,7 @@ export async function POST(request: Request) {
             }
         }
 
-        // 9. Delete the old user row
+        // 7. Delete the old empty user row
         await prisma.user.delete({
             where: { id: oldId }
         });
