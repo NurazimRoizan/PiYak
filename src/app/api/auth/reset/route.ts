@@ -29,8 +29,14 @@ async function performReset(request: Request, isRedirect: boolean) {
   response.headers.set('Pragma', 'no-cache');
   response.headers.set('Expires', '0');
 
-  // Purge essential Clerk auth cookies across host-only and parent domain scopes
-  appendAuthCookiePurgeHeaders(response.headers, requestUrl.hostname);
+  // Purge all Clerk auth cookies across host-only and domain scopes, including cookies from request
+  const cookieHeader = request.headers.get('cookie');
+  appendAuthCookiePurgeHeaders(response.headers, requestUrl.hostname, cookieHeader);
+
+  response.headers.append(
+    'Set-Cookie',
+    '__piyak_loop_count=; Path=/; Max-Age=0; Expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax'
+  );
 
   return response;
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Space_Grotesk } from 'next/font/google';
 
 const spaceGrotesk = Space_Grotesk({
@@ -10,12 +10,15 @@ const spaceGrotesk = Space_Grotesk({
 
 export default function GlobalError({
   error,
-  reset,
 }: {
   error: Error & { digest?: string };
   reset: () => void;
 }) {
   const [isResetting, setIsResetting] = useState(false);
+
+  useEffect(() => {
+    console.error('[PiYak GlobalError] Fatal crash:', error);
+  }, [error]);
 
   const handleHardReset = async () => {
     if (isResetting) return;

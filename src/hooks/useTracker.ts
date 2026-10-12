@@ -44,7 +44,10 @@ export function useTracker() {
         }
 
         const fetchPartnerInfo = async () => {
-            if (!userId) return;
+            if (!userId) {
+                setIsPartnerLoading(false);
+                return;
+            }
             try {
                 const res = await fetch('/api/partner');
                 if (res.ok) {
