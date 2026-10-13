@@ -8,6 +8,7 @@ const isPublicRoute = createRouteMatcher([
   '/sign-in(.*)',
   '/sign-up(.*)',
   '/api/auth/(.*)',
+  '/__clerk(.*)',
   '/sitemap.xml',
   '/robots.txt',
   '/manifest.json'
@@ -16,20 +17,6 @@ const isPublicRoute = createRouteMatcher([
 const clerkHandler = clerkMiddleware(async (auth, req) => {
   if (!isPublicRoute(req)) {
     await auth.protect();
-  }
-
-  const authObj = await auth();
-  // Self-healing: if client sends a session cookie but is not authenticated (e.g. expired session token),
-  // purge stale cookies across all domains from the response to prevent broken handshake/redirect loops.
-  if (!authObj.userId && (
-    req.cookies.has('__session') || 
-    req.cookies.has('__client_uat') ||
-    Array.from(req.cookies.getAll()).some(c => c.name.startsWith('__session') || c.name.startsWith('__client') || c.name.startsWith('__clerk'))
-  )) {
-    const res = NextResponse.next();
-    const cookieHeader = req.headers.get('cookie');
-    appendAuthCookiePurgeHeaders(res.headers, req.nextUrl.hostname, cookieHeader);
-    return res;
   }
 });
 
@@ -108,8 +95,8 @@ export default async function middleware(req: NextRequest, event: NextFetchEvent
 
 export const config = {
   matcher: [
-    // Skip Next.js internals, static files, and explicitly bypass /api/auth/reset
-    '/((?!_next|api/auth/reset|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)',
+    // Skip Next.js internals, images, static files, and explicitly bypass /api/auth/reset
+    '/((?!_next|images|api/auth/reset|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)',
     // Always run for Clerk's auto-proxy path
     '/__clerk/(.*)',
     // Always run for API routes, except /api/auth/reset

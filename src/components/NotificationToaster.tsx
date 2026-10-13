@@ -1,31 +1,82 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Component, type ReactNode } from 'react';
 import { useAuth } from '@clerk/nextjs';
 
-interface Notification {
+interface NotificationItem {
     id: string;
     message: string;
     isRead: boolean;
     createdAt: string;
 }
 
-export default function NotificationToaster() {
+// Error boundary wrapper to guarantee NotificationToaster never crashes RootLayout
+class ToasterErrorBoundary extends Component<{ children: ReactNode }, { hasError: boolean }> {
+    state = { hasError: false };
+
+    static getDerivedStateFromError() {
+        return { hasError: true };
+    }
+
+    componentDidCatch(error: unknown) {
+        console.warn('[NotificationToaster] Suppressed unexpected error to prevent app crash:', error);
+    }
+
+    render() {
+        if (this.state.hasError) return null;
+        return this.props.children;
+    }
+}
+
+function NotificationToasterInner() {
     const { userId } = useAuth();
-    const [notifications, setNotifications] = useState<Notification[]>([]);
+    const [notifications, setNotifications] = useState<NotificationItem[]>([]);
     
     useEffect(() => {
-        if (!userId) {
-            setNotifications([]);
-            return;
-        }
+        if (!userId) return;
 
-        // Request Notification permission if supported and not already requested
+        // Safely check notification permission
         if (typeof window !== 'undefined' && 'Notification' in window) {
-            if (Notification.permission === 'default') {
-                Notification.requestPermission();
+            try {
+                if (Notification.permission === 'default') {
+                    Notification.requestPermission().catch(() => {});
+                }
+            } catch {
+                // Ignore permission request error
             }
         }
+
+        const showNativeNotification = async (message: string) => {
+            if (typeof window === 'undefined' || !('Notification' in window) || Notification.permission !== 'granted') {
+                return;
+            }
+
+            try {
+                // In Chrome on Android (and PWAs), `new Notification()` throws an Illegal Constructor TypeError.
+                // Mobile Chromium requires ServiceWorkerRegistration.showNotification().
+                if ('serviceWorker' in navigator) {
+                    const registration = await navigator.serviceWorker.ready;
+                    if (registration && typeof registration.showNotification === 'function') {
+                        await registration.showNotification('PiYak Update', {
+                            body: message,
+                            icon: '/images/icon-192x192.png',
+                            badge: '/images/icon-192x192.png',
+                            tag: 'piyak-notification'
+                        });
+                        return;
+                    }
+                }
+
+                // Desktop browser fallback
+                new Notification('PiYak Update', {
+                    body: message,
+                    icon: '/images/icon-192x192.png',
+                });
+            } catch (err) {
+                // Never let native notification failure bubble or crash the UI
+                console.warn('[NotificationToaster] Could not display native notification:', err);
+            }
+        };
 
         const fetchNotifications = async () => {
             if (!userId) return;
@@ -33,31 +84,31 @@ export default function NotificationToaster() {
                 const res = await fetch('/api/notifications');
                 if (res.ok) {
                     const data = await res.json();
+                    const fetchedList: NotificationItem[] = data.notifications || [];
                     
-                    if (data.notifications && data.notifications.length > 0) {
+                    if (fetchedList.length > 0) {
                         setNotifications(prev => {
-                            const newNotifications = data.notifications.filter(
-                                (n: Notification) => !prev.some(p => p.id === n.id)
+                            const newNotifications = fetchedList.filter(
+                                (n: NotificationItem) => !prev.some(p => p.id === n.id)
                             );
                             
-                            // Trigger native OS notification for new ones (User requested double dings!)
-                            if (newNotifications.length > 0 && typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
-                                newNotifications.forEach((n: Notification) => {
-                                    new Notification('PiYak Update', {
-                                        body: n.message,
-                                        icon: '/images/icon-192x192.png',
-                                    });
-                                });
+                            // Trigger native OS notifications OUTSIDE the React state updater
+                            if (newNotifications.length > 0) {
+                                setTimeout(() => {
+                                    for (const n of newNotifications) {
+                                        showNativeNotification(n.message);
+                                    }
+                                }, 0);
                             }
                             
-                            return data.notifications;
+                            return fetchedList;
                         });
                     } else {
                         setNotifications([]);
                     }
                 }
             } catch (error) {
-                console.error("Failed to fetch notifications:", error);
+                console.warn('[NotificationToaster] Failed to fetch notifications:', error);
             }
         };
 
@@ -70,7 +121,6 @@ export default function NotificationToaster() {
     }, [userId]);
 
     const dismissNotification = async (id: string) => {
-        // Optimistic UI update
         setNotifications(prev => prev.filter(n => n.id !== id));
 
         try {
@@ -80,11 +130,11 @@ export default function NotificationToaster() {
                 body: JSON.stringify({ notificationId: id })
             });
         } catch (error) {
-            console.error("Failed to dismiss notification:", error);
+            console.warn('[NotificationToaster] Failed to dismiss notification:', error);
         }
     };
 
-    if (notifications.length === 0) return null;
+    if (!userId || notifications.length === 0) return null;
 
     return (
         <div className="fixed bottom-4 right-4 z-50 flex flex-col gap-3">
@@ -104,5 +154,13 @@ export default function NotificationToaster() {
                 </div>
             ))}
         </div>
+    );
+}
+
+export default function NotificationToaster() {
+    return (
+        <ToasterErrorBoundary>
+            <NotificationToasterInner />
+        </ToasterErrorBoundary>
     );
 }
